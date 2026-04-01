@@ -57,3 +57,51 @@ enum class TimestampOverlayAlignment(
         exportKey = "bottom_end",
     ),
 }
+
+enum class TimestampOverlayScale(
+    val label: String,
+    val timestampFontSp: Int,
+    val locationFontSp: Int,
+    val exportKey: String,
+) {
+    Small(
+        label = "작게",
+        timestampFontSp = 24,
+        locationFontSp = 12,
+        exportKey = "small",
+    ),
+    Medium(
+        label = "보통",
+        timestampFontSp = 28,
+        locationFontSp = 14,
+        exportKey = "medium",
+    ),
+    Large(
+        label = "크게",
+        timestampFontSp = 32,
+        locationFontSp = 16,
+        exportKey = "large",
+    ),
+}
+
+enum class TimestampOverlayInset(
+    val label: String,
+    val previewPaddingDp: Int,
+    val exportKey: String,
+) {
+    Tight(
+        label = "가깝게",
+        previewPaddingDp = 14,
+        exportKey = "tight",
+    ),
+    Balanced(
+        label = "기본",
+        previewPaddingDp = 18,
+        exportKey = "balanced",
+    ),
+    Spacious(
+        label = "여유",
+        previewPaddingDp = 24,
+        exportKey = "spacious",
+    ),
+}

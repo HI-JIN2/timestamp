@@ -119,20 +119,30 @@ class MainActivity : ComponentActivity() {
         val mutableBitmap = sourceBitmap.copy(Bitmap.Config.ARGB_8888, true)
         val canvas = Canvas(mutableBitmap)
 
-        val density = resources.displayMetrics.density
-        val horizontalPadding = 18f * density
-        val verticalPadding = 18f * density
+        val stylePreset = AndroidOverlayStylePreset.from(request.scaleKey, request.insetKey)
+        val horizontalPadding = mutableBitmap.width * 0.04f
+        val verticalPadding = mutableBitmap.height * stylePreset.bottomInsetRatio
         val timestampPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = parseColor(request.timestampColorHex)
-            textSize = 28f * density
+            textSize = mutableBitmap.width * stylePreset.timestampTextRatio
             typeface = android.graphics.Typeface.MONOSPACE
-            setShadowLayer(8f * density, 0f, 3f * density, parseColor(request.shadowColorHex))
+            setShadowLayer(
+                mutableBitmap.width * 0.012f,
+                0f,
+                mutableBitmap.width * 0.004f,
+                parseColor(request.shadowColorHex),
+            )
         }
         val locationPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = parseColor(request.locationColorHex)
-            textSize = 14f * density
+            textSize = mutableBitmap.width * stylePreset.locationTextRatio
             typeface = android.graphics.Typeface.MONOSPACE
-            setShadowLayer(6f * density, 0f, 2f * density, parseColor(request.shadowColorHex))
+            setShadowLayer(
+                mutableBitmap.width * 0.009f,
+                0f,
+                mutableBitmap.width * 0.003f,
+                parseColor(request.shadowColorHex),
+            )
         }
 
         val timestampWidth = timestampPaint.measureText(request.timestamp)
@@ -143,7 +153,7 @@ class MainActivity : ComponentActivity() {
             else -> horizontalPadding
         }
         val locationBaseline = mutableBitmap.height - verticalPadding
-        val timestampBaseline = locationBaseline - locationPaint.textSize - (6f * density)
+        val timestampBaseline = locationBaseline - locationPaint.textSize - (mutableBitmap.height * 0.02f)
 
         canvas.drawText(request.timestamp, startX, timestampBaseline, timestampPaint)
         canvas.drawText(request.location, startX, locationBaseline, locationPaint)
@@ -161,5 +171,36 @@ private fun OutputStream?.useBitmap(bitmap: Bitmap) {
     if (this == null) error("outputStream unavailable")
     use { stream ->
         check(bitmap.compress(Bitmap.CompressFormat.JPEG, 95, stream))
+    }
+}
+
+private data class AndroidOverlayStylePreset(
+    val timestampTextRatio: Float,
+    val locationTextRatio: Float,
+    val bottomInsetRatio: Float,
+) {
+    companion object {
+        fun from(scaleKey: String, insetKey: String): AndroidOverlayStylePreset {
+            val timestampRatio = when (scaleKey) {
+                "small" -> 0.052f
+                "large" -> 0.074f
+                else -> 0.064f
+            }
+            val locationRatio = when (scaleKey) {
+                "small" -> 0.024f
+                "large" -> 0.034f
+                else -> 0.029f
+            }
+            val insetRatio = when (insetKey) {
+                "tight" -> 0.055f
+                "spacious" -> 0.11f
+                else -> 0.08f
+            }
+            return AndroidOverlayStylePreset(
+                timestampTextRatio = timestampRatio,
+                locationTextRatio = locationRatio,
+                bottomInsetRatio = insetRatio,
+            )
+        }
     }
 }

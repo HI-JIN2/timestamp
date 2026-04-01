@@ -8,4 +8,6 @@ data class TimestampExportRequest(
     val locationColorHex: String,
     val shadowColorHex: String,
     val alignmentKey: String,
+    val scaleKey: String,
+    val insetKey: String,
 )

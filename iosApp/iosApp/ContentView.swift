@@ -114,8 +114,15 @@ private func renderTimestampedImage(
     return renderer.image { _ in
         image.draw(in: CGRect(origin: .zero, size: size))
 
-        let timestampFont = UIFont.monospacedDigitSystemFont(ofSize: max(size.width * 0.052, 26), weight: .bold)
-        let locationFont = UIFont.monospacedSystemFont(ofSize: max(size.width * 0.024, 13), weight: .regular)
+        let stylePreset = iosOverlayStylePreset(scaleKey: request.scaleKey, insetKey: request.insetKey)
+        let timestampFont = UIFont.monospacedDigitSystemFont(
+            ofSize: max(size.width * stylePreset.timestampRatio, 22),
+            weight: .bold
+        )
+        let locationFont = UIFont.monospacedSystemFont(
+            ofSize: max(size.width * stylePreset.locationRatio, 11),
+            weight: .regular
+        )
 
         let shadow = NSShadow()
         shadow.shadowColor = colorFromHex(request.shadowColorHex)
@@ -134,7 +141,7 @@ private func renderTimestampedImage(
         ]
 
         let horizontalPadding = max(size.width * 0.04, 18)
-        let bottomPadding = max(size.height * 0.05, 18)
+        let bottomPadding = max(size.height * stylePreset.bottomInsetRatio, 18)
         let timestampSize = (request.timestamp as NSString).size(withAttributes: timestampAttributes)
         let locationSize = (request.location as NSString).size(withAttributes: locationAttributes)
         let contentWidth = max(timestampSize.width, locationSize.width)
@@ -154,6 +161,34 @@ private func renderTimestampedImage(
             withAttributes: locationAttributes
         )
     }
+}
+
+private func iosOverlayStylePreset(scaleKey: String, insetKey: String) -> (timestampRatio: CGFloat, locationRatio: CGFloat, bottomInsetRatio: CGFloat) {
+    let timestampRatio: CGFloat
+    let locationRatio: CGFloat
+    switch scaleKey {
+    case "small":
+        timestampRatio = 0.052
+        locationRatio = 0.024
+    case "large":
+        timestampRatio = 0.074
+        locationRatio = 0.034
+    default:
+        timestampRatio = 0.064
+        locationRatio = 0.029
+    }
+
+    let bottomInsetRatio: CGFloat
+    switch insetKey {
+    case "tight":
+        bottomInsetRatio = 0.055
+    case "spacious":
+        bottomInsetRatio = 0.11
+    default:
+        bottomInsetRatio = 0.08
+    }
+
+    return (timestampRatio, locationRatio, bottomInsetRatio)
 }
 
 private func colorFromHex(_ hex: String) -> UIColor {

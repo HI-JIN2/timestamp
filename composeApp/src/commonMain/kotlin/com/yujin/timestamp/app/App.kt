@@ -66,6 +66,8 @@ fun TimestampApp(
     }
     var overlayTone by remember { mutableStateOf(TimestampOverlayTone.ClassicAmber) }
     var overlayAlignment by remember { mutableStateOf(TimestampOverlayAlignment.BottomStart) }
+    var overlayScale by remember { mutableStateOf(TimestampOverlayScale.Medium) }
+    var overlayInset by remember { mutableStateOf(TimestampOverlayInset.Balanced) }
 
     MaterialTheme(
         colorScheme = retroColorScheme(),
@@ -103,12 +105,16 @@ fun TimestampApp(
                     previewImage = previewImage,
                     overlayTone = overlayTone,
                     overlayAlignment = overlayAlignment,
+                    overlayScale = overlayScale,
+                    overlayInset = overlayInset,
                     onTimestampChange = { editableTimestamp = it },
                     onResetTimestamp = {
                         editableTimestamp = previewState.timestampLabel
                     },
                     onToneChange = { overlayTone = it },
                     onAlignmentChange = { overlayAlignment = it },
+                    onScaleChange = { overlayScale = it },
+                    onInsetChange = { overlayInset = it },
                     exportMessage = exportMessage,
                     onPickPhoto = onPickPhoto,
                     onExport = {
@@ -122,6 +128,8 @@ fun TimestampApp(
                                 locationColorHex = overlayTone.locationColorHex,
                                 shadowColorHex = overlayTone.shadowColorHex,
                                 alignmentKey = overlayAlignment.exportKey,
+                                scaleKey = overlayScale.exportKey,
+                                insetKey = overlayInset.exportKey,
                             ),
                         )
                     },
@@ -151,10 +159,14 @@ private fun PreviewCard(
     previewImage: ImageBitmap?,
     overlayTone: TimestampOverlayTone,
     overlayAlignment: TimestampOverlayAlignment,
+    overlayScale: TimestampOverlayScale,
+    overlayInset: TimestampOverlayInset,
     onTimestampChange: (String) -> Unit,
     onResetTimestamp: () -> Unit,
     onToneChange: (TimestampOverlayTone) -> Unit,
     onAlignmentChange: (TimestampOverlayAlignment) -> Unit,
+    onScaleChange: (TimestampOverlayScale) -> Unit,
+    onInsetChange: (TimestampOverlayInset) -> Unit,
     exportMessage: String?,
     onPickPhoto: () -> Unit,
     onExport: () -> Unit,
@@ -228,6 +240,8 @@ private fun PreviewCard(
                     location = location,
                     tone = overlayTone,
                     alignment = overlayAlignment,
+                    scale = overlayScale,
+                    inset = overlayInset,
                 )
             }
 
@@ -274,6 +288,22 @@ private fun PreviewCard(
                 onSelected = onAlignmentChange,
             )
 
+            OverlayControlRow(
+                label = "글자 크기",
+                options = TimestampOverlayScale.entries,
+                selected = overlayScale,
+                optionLabel = { it.label },
+                onSelected = onScaleChange,
+            )
+
+            OverlayControlRow(
+                label = "하단 여백",
+                options = TimestampOverlayInset.entries,
+                selected = overlayInset,
+                optionLabel = { it.label },
+                onSelected = onInsetChange,
+            )
+
             HorizontalDivider(color = Color(0x14000000))
 
             Row(
@@ -305,11 +335,13 @@ private fun BoxScope.TimestampOverlay(
     location: String,
     tone: TimestampOverlayTone,
     alignment: TimestampOverlayAlignment,
+    scale: TimestampOverlayScale,
+    inset: TimestampOverlayInset,
 ) {
     Column(
         modifier = Modifier
             .align(alignment.containerAlignment)
-            .padding(18.dp),
+            .padding(inset.previewPaddingDp.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
         horizontalAlignment = if (alignment == TimestampOverlayAlignment.BottomEnd) {
             Alignment.End
@@ -320,7 +352,7 @@ private fun BoxScope.TimestampOverlay(
         Text(
             text = timestamp,
             color = tone.timestampColor,
-            fontSize = 28.sp,
+            fontSize = scale.timestampFontSp.sp,
             fontWeight = FontWeight.Black,
             fontFamily = FontFamily.Monospace,
             letterSpacing = 1.4.sp,
@@ -338,7 +370,9 @@ private fun BoxScope.TimestampOverlay(
         Text(
             text = location,
             color = tone.locationColor,
-            style = MaterialTheme.typography.labelLarge.merge(
+            style = MaterialTheme.typography.labelLarge.copy(
+                fontSize = scale.locationFontSp.sp,
+            ).merge(
                 overlayTextStyle(
                     shadowColor = tone.shadowColor,
                     blurRadius = 6f,
