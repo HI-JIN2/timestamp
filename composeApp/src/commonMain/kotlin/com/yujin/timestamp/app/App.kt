@@ -118,8 +118,10 @@ fun TimestampApp(
                                 imageBase64 = imageBase64,
                                 timestamp = editableTimestamp,
                                 location = previewState.locationLabel,
-                                tone = overlayTone,
-                                alignment = overlayAlignment,
+                                timestampColorHex = overlayTone.timestampColorHex,
+                                locationColorHex = overlayTone.locationColorHex,
+                                shadowColorHex = overlayTone.shadowColorHex,
+                                alignmentKey = overlayAlignment.exportKey,
                             ),
                         )
                     },

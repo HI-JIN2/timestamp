@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Color.parseColor
 import android.net.Uri
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -15,7 +16,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.toArgb
 import androidx.exifinterface.media.ExifInterface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -123,24 +123,24 @@ class MainActivity : ComponentActivity() {
         val horizontalPadding = 18f * density
         val verticalPadding = 18f * density
         val timestampPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = request.tone.timestampColor.toArgb()
+            color = parseColor(request.timestampColorHex)
             textSize = 28f * density
             typeface = android.graphics.Typeface.MONOSPACE
-            setShadowLayer(8f * density, 0f, 3f * density, request.tone.shadowColor.toArgb())
+            setShadowLayer(8f * density, 0f, 3f * density, parseColor(request.shadowColorHex))
         }
         val locationPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = request.tone.locationColor.toArgb()
+            color = parseColor(request.locationColorHex)
             textSize = 14f * density
             typeface = android.graphics.Typeface.MONOSPACE
-            setShadowLayer(6f * density, 0f, 2f * density, request.tone.shadowColor.toArgb())
+            setShadowLayer(6f * density, 0f, 2f * density, parseColor(request.shadowColorHex))
         }
 
         val timestampWidth = timestampPaint.measureText(request.timestamp)
         val locationWidth = locationPaint.measureText(request.location)
         val contentWidth = maxOf(timestampWidth, locationWidth)
-        val startX = when (request.alignment) {
-            TimestampOverlayAlignment.BottomStart -> horizontalPadding
-            TimestampOverlayAlignment.BottomEnd -> mutableBitmap.width - horizontalPadding - contentWidth
+        val startX = when (request.alignmentKey) {
+            "bottom_end" -> mutableBitmap.width - horizontalPadding - contentWidth
+            else -> horizontalPadding
         }
         val locationBaseline = mutableBitmap.height - verticalPadding
         val timestampBaseline = locationBaseline - locationPaint.textSize - (6f * density)

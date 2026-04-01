@@ -4,6 +4,8 @@ data class TimestampExportRequest(
     val imageBase64: String,
     val timestamp: String,
     val location: String,
-    val tone: TimestampOverlayTone,
-    val alignment: TimestampOverlayAlignment,
+    val timestampColorHex: String,
+    val locationColorHex: String,
+    val shadowColorHex: String,
+    val alignmentKey: String,
 )

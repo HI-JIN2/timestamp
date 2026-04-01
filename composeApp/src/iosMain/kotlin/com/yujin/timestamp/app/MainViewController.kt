@@ -7,12 +7,16 @@ import platform.UIKit.UIViewController
 fun MainViewController(
     selectedImageBase64: String? = null,
     metadataTimestampLabel: String? = null,
+    exportMessage: String? = null,
     onPickPhoto: () -> Unit = {},
+    onExport: (TimestampExportRequest) -> Unit = {},
 ): UIViewController = ComposeUIViewController {
     TimestampApp(
         selectedImageBase64 = selectedImageBase64,
         metadataTimestampLabel = metadataTimestampLabel,
+        exportMessage = exportMessage,
         onPickPhoto = onPickPhoto,
+        onExport = onExport,
     )
 }
 
