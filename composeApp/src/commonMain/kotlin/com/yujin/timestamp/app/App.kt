@@ -49,7 +49,9 @@ import com.yujin.timestamp.shared.preview.TimestampPreviewPresenter
 fun TimestampApp(
     selectedImageBase64: String? = null,
     metadataTimestampLabel: String? = null,
+    exportMessage: String? = null,
     onPickPhoto: () -> Unit = {},
+    onExport: (TimestampExportRequest) -> Unit = {},
 ) {
     val previewImage = remember(selectedImageBase64) {
         selectedImageBase64?.let(::decodeSelectedImage)
@@ -107,7 +109,20 @@ fun TimestampApp(
                     },
                     onToneChange = { overlayTone = it },
                     onAlignmentChange = { overlayAlignment = it },
+                    exportMessage = exportMessage,
                     onPickPhoto = onPickPhoto,
+                    onExport = {
+                        val imageBase64 = selectedImageBase64 ?: return@PreviewCard
+                        onExport(
+                            TimestampExportRequest(
+                                imageBase64 = imageBase64,
+                                timestamp = editableTimestamp,
+                                location = previewState.locationLabel,
+                                tone = overlayTone,
+                                alignment = overlayAlignment,
+                            ),
+                        )
+                    },
                 )
 
                 RoadmapCard(
@@ -138,7 +153,9 @@ private fun PreviewCard(
     onResetTimestamp: () -> Unit,
     onToneChange: (TimestampOverlayTone) -> Unit,
     onAlignmentChange: (TimestampOverlayAlignment) -> Unit,
+    exportMessage: String?,
     onPickPhoto: () -> Unit,
+    onExport: () -> Unit,
 ) {
     Card(
         colors = CardDefaults.cardColors(
@@ -218,6 +235,14 @@ private fun PreviewCard(
                 style = MaterialTheme.typography.bodyMedium,
             )
 
+            if (exportMessage != null) {
+                Text(
+                    text = exportMessage,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+
             OutlinedTextField(
                 value = timestamp,
                 onValueChange = onTimestampChange,
@@ -261,7 +286,10 @@ private fun PreviewCard(
                 ) {
                     Text("기본값 복원")
                 }
-                Button(onClick = {}, enabled = hasSelectedPhoto && timestamp.isNotBlank()) {
+                Button(
+                    onClick = onExport,
+                    enabled = hasSelectedPhoto && timestamp.isNotBlank(),
+                ) {
                     Text("내보내기")
                 }
             }
