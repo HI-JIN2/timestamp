@@ -28,3 +28,15 @@ The app lets users choose a photo and apply a retro timestamp that looks like th
 ## Next Step
 
 Initialize the Compose Multiplatform project baseline and then build the photo selection and timestamp rendering features incrementally.
+
+## Current Baseline
+
+- `composeApp`: shared Compose UI and Android application target
+- `shared`: reusable preview/domain model for feature growth
+- `iosApp`: SwiftUI host app that embeds the shared Compose view
+
+## Local Requirements
+
+- JDK 17
+- Android SDK installed locally
+- Full Xcode installation required for iOS build and test execution

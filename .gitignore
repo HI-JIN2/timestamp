@@ -1,0 +1,12 @@
+.gradle/
+.kotlin/
+build/
+local.properties
+**/build/
+captures/
+.DS_Store
+*.iml
+.idea/
+DerivedData/
+iosApp/.idea/
+
