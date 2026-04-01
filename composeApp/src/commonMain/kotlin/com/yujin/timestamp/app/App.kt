@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -32,9 +34,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yujin.timestamp.shared.preview.TimestampPreviewPresenter
@@ -56,6 +62,8 @@ fun TimestampApp(
     var editableTimestamp by remember(selectedImageBase64, metadataTimestampLabel) {
         mutableStateOf(previewState.timestampLabel)
     }
+    var overlayTone by remember { mutableStateOf(TimestampOverlayTone.ClassicAmber) }
+    var overlayAlignment by remember { mutableStateOf(TimestampOverlayAlignment.BottomStart) }
 
     MaterialTheme(
         colorScheme = retroColorScheme(),
@@ -91,19 +99,23 @@ fun TimestampApp(
                     helper = previewState.helperText,
                     hasSelectedPhoto = hasSelectedPhoto,
                     previewImage = previewImage,
+                    overlayTone = overlayTone,
+                    overlayAlignment = overlayAlignment,
                     onTimestampChange = { editableTimestamp = it },
                     onResetTimestamp = {
                         editableTimestamp = previewState.timestampLabel
                     },
+                    onToneChange = { overlayTone = it },
+                    onAlignmentChange = { overlayAlignment = it },
                     onPickPhoto = onPickPhoto,
                 )
 
                 RoadmapCard(
                     title = "다음 구현 순서",
                     lines = listOf(
-                        "1. 선택한 이미지를 실제 프리뷰로 디코딩",
-                        "2. 타임스탬프 스타일/위치 옵션 모델링",
-                        "3. 실제 이미지 위 오버레이 렌더링",
+                        "1. 저장용 비트맵에 동일 오버레이 합성",
+                        "2. 타임스탬프 폰트/간격 프리셋 확장",
+                        "3. 위치 미세 조정과 안전 영역 처리",
                         "4. 저장 및 공유 파이프라인 정리",
                     ),
                 )
@@ -120,8 +132,12 @@ private fun PreviewCard(
     helper: String,
     hasSelectedPhoto: Boolean,
     previewImage: ImageBitmap?,
+    overlayTone: TimestampOverlayTone,
+    overlayAlignment: TimestampOverlayAlignment,
     onTimestampChange: (String) -> Unit,
     onResetTimestamp: () -> Unit,
+    onToneChange: (TimestampOverlayTone) -> Unit,
+    onAlignmentChange: (TimestampOverlayAlignment) -> Unit,
     onPickPhoto: () -> Unit,
 ) {
     Card(
@@ -188,27 +204,12 @@ private fun PreviewCard(
                     )
                 }
 
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(18.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    Text(
-                        text = timestamp,
-                        color = Color(0xFFFFA347),
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Black,
-                        fontFamily = FontFamily.Monospace,
-                        letterSpacing = 1.4.sp,
-                    )
-                    Text(
-                        text = location,
-                        color = Color(0xFFF7E7C6),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontFamily = FontFamily.Monospace,
-                    )
-                }
+                TimestampOverlay(
+                    timestamp = timestamp,
+                    location = location,
+                    tone = overlayTone,
+                    alignment = overlayAlignment,
+                )
             }
 
             Text(
@@ -228,6 +229,22 @@ private fun PreviewCard(
                     Text(metadataDescription)
                 },
                 singleLine = true,
+            )
+
+            OverlayControlRow(
+                label = "오버레이 톤",
+                options = TimestampOverlayTone.entries,
+                selected = overlayTone,
+                optionLabel = { it.label },
+                onSelected = onToneChange,
+            )
+
+            OverlayControlRow(
+                label = "오버레이 위치",
+                options = TimestampOverlayAlignment.entries,
+                selected = overlayAlignment,
+                optionLabel = { it.label },
+                onSelected = onAlignmentChange,
             )
 
             HorizontalDivider(color = Color(0x14000000))
@@ -250,6 +267,102 @@ private fun PreviewCard(
             }
         }
     }
+}
+
+@Composable
+private fun BoxScope.TimestampOverlay(
+    timestamp: String,
+    location: String,
+    tone: TimestampOverlayTone,
+    alignment: TimestampOverlayAlignment,
+) {
+    Column(
+        modifier = Modifier
+            .align(alignment.containerAlignment)
+            .padding(18.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalAlignment = if (alignment == TimestampOverlayAlignment.BottomEnd) {
+            Alignment.End
+        } else {
+            Alignment.Start
+        },
+    ) {
+        Text(
+            text = timestamp,
+            color = tone.timestampColor,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Black,
+            fontFamily = FontFamily.Monospace,
+            letterSpacing = 1.4.sp,
+            textAlign = if (alignment == TimestampOverlayAlignment.BottomEnd) {
+                TextAlign.End
+            } else {
+                TextAlign.Start
+            },
+            style = overlayTextStyle(
+                shadowColor = tone.shadowColor,
+                blurRadius = 8f,
+                yOffset = 3f,
+            ),
+        )
+        Text(
+            text = location,
+            color = tone.locationColor,
+            style = MaterialTheme.typography.labelLarge.merge(
+                overlayTextStyle(
+                    shadowColor = tone.shadowColor,
+                    blurRadius = 6f,
+                    yOffset = 2f,
+                ),
+            ),
+            fontFamily = FontFamily.Monospace,
+        )
+    }
+}
+
+@Composable
+private fun <T> OverlayControlRow(
+    label: String,
+    options: List<T>,
+    selected: T,
+    optionLabel: (T) -> String,
+    onSelected: (T) -> Unit,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            options.forEach { option ->
+                FilterChip(
+                    selected = option == selected,
+                    onClick = { onSelected(option) },
+                    label = { Text(optionLabel(option)) },
+                )
+            }
+        }
+    }
+}
+
+private fun overlayTextStyle(
+    shadowColor: Color,
+    blurRadius: Float,
+    yOffset: Float,
+): TextStyle {
+    return TextStyle(
+        shadow = Shadow(
+            color = shadowColor,
+            offset = Offset(0f, yOffset),
+            blurRadius = blurRadius,
+        ),
+    )
 }
 
 @Composable
