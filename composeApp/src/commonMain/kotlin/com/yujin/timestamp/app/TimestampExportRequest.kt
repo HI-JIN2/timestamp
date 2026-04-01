@@ -10,4 +10,7 @@ data class TimestampExportRequest(
     val alignmentKey: String,
     val scaleKey: String,
     val insetKey: String,
+    val safeAreaKey: String,
+    val offsetXStep: Int,
+    val offsetYStep: Int,
 )

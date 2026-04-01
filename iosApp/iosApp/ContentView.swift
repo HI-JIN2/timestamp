@@ -114,7 +114,11 @@ private func renderTimestampedImage(
     return renderer.image { _ in
         image.draw(in: CGRect(origin: .zero, size: size))
 
-        let stylePreset = iosOverlayStylePreset(scaleKey: request.scaleKey, insetKey: request.insetKey)
+        let stylePreset = iosOverlayStylePreset(
+            scaleKey: request.scaleKey,
+            insetKey: request.insetKey,
+            safeAreaKey: request.safeAreaKey
+        )
         let timestampFont = UIFont.monospacedDigitSystemFont(
             ofSize: max(size.width * stylePreset.timestampRatio, 22),
             weight: .bold
@@ -141,7 +145,7 @@ private func renderTimestampedImage(
         ]
 
         let horizontalPadding = max(size.width * 0.04, 18)
-        let bottomPadding = max(size.height * stylePreset.bottomInsetRatio, 18)
+        let bottomPadding = max(size.height * (stylePreset.bottomInsetRatio + stylePreset.safeAreaExtraRatio), 18)
         let timestampSize = (request.timestamp as NSString).size(withAttributes: timestampAttributes)
         let locationSize = (request.location as NSString).size(withAttributes: locationAttributes)
         let contentWidth = max(timestampSize.width, locationSize.width)
@@ -149,21 +153,22 @@ private func renderTimestampedImage(
         let startX: CGFloat = request.alignmentKey == "bottom_end"
             ? size.width - horizontalPadding - contentWidth
             : horizontalPadding
-        let locationY = size.height - bottomPadding - locationSize.height
+        let adjustedX = startX + (size.width * 0.018 * CGFloat(request.offsetXStep))
+        let locationY = size.height - bottomPadding - locationSize.height - (size.height * 0.016 * CGFloat(request.offsetYStep))
         let timestampY = locationY - timestampSize.height - max(size.height * 0.008, 6)
 
         (request.timestamp as NSString).draw(
-            at: CGPoint(x: startX, y: timestampY),
+            at: CGPoint(x: adjustedX, y: timestampY),
             withAttributes: timestampAttributes
         )
         (request.location as NSString).draw(
-            at: CGPoint(x: startX, y: locationY),
+            at: CGPoint(x: adjustedX, y: locationY),
             withAttributes: locationAttributes
         )
     }
 }
 
-private func iosOverlayStylePreset(scaleKey: String, insetKey: String) -> (timestampRatio: CGFloat, locationRatio: CGFloat, bottomInsetRatio: CGFloat) {
+private func iosOverlayStylePreset(scaleKey: String, insetKey: String, safeAreaKey: String) -> (timestampRatio: CGFloat, locationRatio: CGFloat, bottomInsetRatio: CGFloat, safeAreaExtraRatio: CGFloat) {
     let timestampRatio: CGFloat
     let locationRatio: CGFloat
     switch scaleKey {
@@ -188,7 +193,17 @@ private func iosOverlayStylePreset(scaleKey: String, insetKey: String) -> (times
         bottomInsetRatio = 0.08
     }
 
-    return (timestampRatio, locationRatio, bottomInsetRatio)
+    let safeAreaExtraRatio: CGFloat
+    switch safeAreaKey {
+    case "standard":
+        safeAreaExtraRatio = 0.025
+    case "strong":
+        safeAreaExtraRatio = 0.05
+    default:
+        safeAreaExtraRatio = 0
+    }
+
+    return (timestampRatio, locationRatio, bottomInsetRatio, safeAreaExtraRatio)
 }
 
 private func colorFromHex(_ hex: String) -> UIColor {

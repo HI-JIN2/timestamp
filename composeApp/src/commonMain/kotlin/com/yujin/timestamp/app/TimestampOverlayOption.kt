@@ -105,3 +105,29 @@ enum class TimestampOverlayInset(
         exportKey = "spacious",
     ),
 }
+
+enum class TimestampOverlaySafeArea(
+    val label: String,
+    val extraPreviewBottomDp: Int,
+    val exportExtraBottomRatio: Float,
+    val exportKey: String,
+) {
+    Off(
+        label = "없음",
+        extraPreviewBottomDp = 0,
+        exportExtraBottomRatio = 0f,
+        exportKey = "off",
+    ),
+    Standard(
+        label = "기본",
+        extraPreviewBottomDp = 10,
+        exportExtraBottomRatio = 0.025f,
+        exportKey = "standard",
+    ),
+    Strong(
+        label = "넓게",
+        extraPreviewBottomDp = 20,
+        exportExtraBottomRatio = 0.05f,
+        exportKey = "strong",
+    ),
+}

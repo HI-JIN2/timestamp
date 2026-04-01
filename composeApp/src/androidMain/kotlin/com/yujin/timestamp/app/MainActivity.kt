@@ -119,9 +119,13 @@ class MainActivity : ComponentActivity() {
         val mutableBitmap = sourceBitmap.copy(Bitmap.Config.ARGB_8888, true)
         val canvas = Canvas(mutableBitmap)
 
-        val stylePreset = AndroidOverlayStylePreset.from(request.scaleKey, request.insetKey)
+        val stylePreset = AndroidOverlayStylePreset.from(
+            scaleKey = request.scaleKey,
+            insetKey = request.insetKey,
+            safeAreaKey = request.safeAreaKey,
+        )
         val horizontalPadding = mutableBitmap.width * 0.04f
-        val verticalPadding = mutableBitmap.height * stylePreset.bottomInsetRatio
+        val verticalPadding = mutableBitmap.height * (stylePreset.bottomInsetRatio + stylePreset.safeAreaExtraRatio)
         val timestampPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = parseColor(request.timestampColorHex)
             textSize = mutableBitmap.width * stylePreset.timestampTextRatio
@@ -152,11 +156,13 @@ class MainActivity : ComponentActivity() {
             "bottom_end" -> mutableBitmap.width - horizontalPadding - contentWidth
             else -> horizontalPadding
         }
+        val adjustedStartX = startX + (mutableBitmap.width * 0.018f * request.offsetXStep)
         val locationBaseline = mutableBitmap.height - verticalPadding
-        val timestampBaseline = locationBaseline - locationPaint.textSize - (mutableBitmap.height * 0.02f)
+        val adjustedLocationBaseline = locationBaseline - (mutableBitmap.height * 0.016f * request.offsetYStep)
+        val timestampBaseline = adjustedLocationBaseline - locationPaint.textSize - (mutableBitmap.height * 0.02f)
 
-        canvas.drawText(request.timestamp, startX, timestampBaseline, timestampPaint)
-        canvas.drawText(request.location, startX, locationBaseline, locationPaint)
+        canvas.drawText(request.timestamp, adjustedStartX, timestampBaseline, timestampPaint)
+        canvas.drawText(request.location, adjustedStartX, adjustedLocationBaseline, locationPaint)
 
         return mutableBitmap
     }
@@ -178,9 +184,10 @@ private data class AndroidOverlayStylePreset(
     val timestampTextRatio: Float,
     val locationTextRatio: Float,
     val bottomInsetRatio: Float,
+    val safeAreaExtraRatio: Float,
 ) {
     companion object {
-        fun from(scaleKey: String, insetKey: String): AndroidOverlayStylePreset {
+        fun from(scaleKey: String, insetKey: String, safeAreaKey: String): AndroidOverlayStylePreset {
             val timestampRatio = when (scaleKey) {
                 "small" -> 0.052f
                 "large" -> 0.074f
@@ -196,10 +203,16 @@ private data class AndroidOverlayStylePreset(
                 "spacious" -> 0.11f
                 else -> 0.08f
             }
+            val safeAreaRatio = when (safeAreaKey) {
+                "strong" -> 0.05f
+                "standard" -> 0.025f
+                else -> 0f
+            }
             return AndroidOverlayStylePreset(
                 timestampTextRatio = timestampRatio,
                 locationTextRatio = locationRatio,
                 bottomInsetRatio = insetRatio,
+                safeAreaExtraRatio = safeAreaRatio,
             )
         }
     }

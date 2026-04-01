@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -68,6 +69,9 @@ fun TimestampApp(
     var overlayAlignment by remember { mutableStateOf(TimestampOverlayAlignment.BottomStart) }
     var overlayScale by remember { mutableStateOf(TimestampOverlayScale.Medium) }
     var overlayInset by remember { mutableStateOf(TimestampOverlayInset.Balanced) }
+    var overlaySafeArea by remember { mutableStateOf(TimestampOverlaySafeArea.Standard) }
+    var overlayOffsetXStep by remember { mutableStateOf(0) }
+    var overlayOffsetYStep by remember { mutableStateOf(0) }
 
     MaterialTheme(
         colorScheme = retroColorScheme(),
@@ -107,6 +111,9 @@ fun TimestampApp(
                     overlayAlignment = overlayAlignment,
                     overlayScale = overlayScale,
                     overlayInset = overlayInset,
+                    overlaySafeArea = overlaySafeArea,
+                    overlayOffsetXStep = overlayOffsetXStep,
+                    overlayOffsetYStep = overlayOffsetYStep,
                     onTimestampChange = { editableTimestamp = it },
                     onResetTimestamp = {
                         editableTimestamp = previewState.timestampLabel
@@ -115,6 +122,9 @@ fun TimestampApp(
                     onAlignmentChange = { overlayAlignment = it },
                     onScaleChange = { overlayScale = it },
                     onInsetChange = { overlayInset = it },
+                    onSafeAreaChange = { overlaySafeArea = it },
+                    onOffsetXChange = { overlayOffsetXStep = it.coerceIn(-3, 3) },
+                    onOffsetYChange = { overlayOffsetYStep = it.coerceIn(-3, 3) },
                     exportMessage = exportMessage,
                     onPickPhoto = onPickPhoto,
                     onExport = {
@@ -130,6 +140,9 @@ fun TimestampApp(
                                 alignmentKey = overlayAlignment.exportKey,
                                 scaleKey = overlayScale.exportKey,
                                 insetKey = overlayInset.exportKey,
+                                safeAreaKey = overlaySafeArea.exportKey,
+                                offsetXStep = overlayOffsetXStep,
+                                offsetYStep = overlayOffsetYStep,
                             ),
                         )
                     },
@@ -161,12 +174,18 @@ private fun PreviewCard(
     overlayAlignment: TimestampOverlayAlignment,
     overlayScale: TimestampOverlayScale,
     overlayInset: TimestampOverlayInset,
+    overlaySafeArea: TimestampOverlaySafeArea,
+    overlayOffsetXStep: Int,
+    overlayOffsetYStep: Int,
     onTimestampChange: (String) -> Unit,
     onResetTimestamp: () -> Unit,
     onToneChange: (TimestampOverlayTone) -> Unit,
     onAlignmentChange: (TimestampOverlayAlignment) -> Unit,
     onScaleChange: (TimestampOverlayScale) -> Unit,
     onInsetChange: (TimestampOverlayInset) -> Unit,
+    onSafeAreaChange: (TimestampOverlaySafeArea) -> Unit,
+    onOffsetXChange: (Int) -> Unit,
+    onOffsetYChange: (Int) -> Unit,
     exportMessage: String?,
     onPickPhoto: () -> Unit,
     onExport: () -> Unit,
@@ -242,6 +261,9 @@ private fun PreviewCard(
                     alignment = overlayAlignment,
                     scale = overlayScale,
                     inset = overlayInset,
+                    safeArea = overlaySafeArea,
+                    offsetXStep = overlayOffsetXStep,
+                    offsetYStep = overlayOffsetYStep,
                 )
             }
 
@@ -304,6 +326,26 @@ private fun PreviewCard(
                 onSelected = onInsetChange,
             )
 
+            OverlayControlRow(
+                label = "안전 영역",
+                options = TimestampOverlaySafeArea.entries,
+                selected = overlaySafeArea,
+                optionLabel = { it.label },
+                onSelected = onSafeAreaChange,
+            )
+
+            NudgeControlRow(
+                label = "좌우 미세 조정",
+                value = overlayOffsetXStep,
+                onValueChange = onOffsetXChange,
+            )
+
+            NudgeControlRow(
+                label = "상하 미세 조정",
+                value = overlayOffsetYStep,
+                onValueChange = onOffsetYChange,
+            )
+
             HorizontalDivider(color = Color(0x14000000))
 
             Row(
@@ -337,6 +379,9 @@ private fun BoxScope.TimestampOverlay(
     alignment: TimestampOverlayAlignment,
     scale: TimestampOverlayScale,
     inset: TimestampOverlayInset,
+    safeArea: TimestampOverlaySafeArea,
+    offsetXStep: Int,
+    offsetYStep: Int,
 ) {
     Column(
         modifier = Modifier
@@ -349,38 +394,51 @@ private fun BoxScope.TimestampOverlay(
             Alignment.Start
         },
     ) {
-        Text(
-            text = timestamp,
-            color = tone.timestampColor,
-            fontSize = scale.timestampFontSp.sp,
-            fontWeight = FontWeight.Black,
-            fontFamily = FontFamily.Monospace,
-            letterSpacing = 1.4.sp,
-            textAlign = if (alignment == TimestampOverlayAlignment.BottomEnd) {
-                TextAlign.End
+        Column(
+            modifier = Modifier.offset(
+                x = (offsetXStep * 10).dp,
+                y = ((offsetYStep * -8) - safeArea.extraPreviewBottomDp).dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalAlignment = if (alignment == TimestampOverlayAlignment.BottomEnd) {
+                Alignment.End
             } else {
-                TextAlign.Start
+                Alignment.Start
             },
-            style = overlayTextStyle(
-                shadowColor = tone.shadowColor,
-                blurRadius = 8f,
-                yOffset = 3f,
-            ),
-        )
-        Text(
-            text = location,
-            color = tone.locationColor,
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontSize = scale.locationFontSp.sp,
-            ).merge(
-                overlayTextStyle(
+        ) {
+            Text(
+                text = timestamp,
+                color = tone.timestampColor,
+                fontSize = scale.timestampFontSp.sp,
+                fontWeight = FontWeight.Black,
+                fontFamily = FontFamily.Monospace,
+                letterSpacing = 1.4.sp,
+                textAlign = if (alignment == TimestampOverlayAlignment.BottomEnd) {
+                    TextAlign.End
+                } else {
+                    TextAlign.Start
+                },
+                style = overlayTextStyle(
                     shadowColor = tone.shadowColor,
-                    blurRadius = 6f,
-                    yOffset = 2f,
+                    blurRadius = 8f,
+                    yOffset = 3f,
                 ),
-            ),
-            fontFamily = FontFamily.Monospace,
-        )
+            )
+            Text(
+                text = location,
+                color = tone.locationColor,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontSize = scale.locationFontSp.sp,
+                ).merge(
+                    overlayTextStyle(
+                        shadowColor = tone.shadowColor,
+                        blurRadius = 6f,
+                        yOffset = 2f,
+                    ),
+                ),
+                fontFamily = FontFamily.Monospace,
+            )
+        }
     }
 }
 
@@ -411,6 +469,34 @@ private fun <T> OverlayControlRow(
                     label = { Text(optionLabel(option)) },
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun NudgeControlRow(
+    label: String,
+    value: Int,
+    onValueChange: (Int) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = "$label: $value",
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Button(onClick = { onValueChange(value - 1) }) {
+            Text("-")
+        }
+        Button(onClick = { onValueChange(0) }) {
+            Text("0")
+        }
+        Button(onClick = { onValueChange(value + 1) }) {
+            Text("+")
         }
     }
 }
