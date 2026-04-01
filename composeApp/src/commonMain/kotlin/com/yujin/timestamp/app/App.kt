@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,8 +32,14 @@ import androidx.compose.ui.unit.sp
 import com.yujin.timestamp.shared.preview.TimestampPreviewPresenter
 
 @Composable
-fun TimestampApp() {
-    val previewState = TimestampPreviewPresenter.preview()
+fun TimestampApp(
+    selectedImageBase64: String? = null,
+    onPickPhoto: () -> Unit = {},
+) {
+    val hasSelectedPhoto = selectedImageBase64 != null
+    val previewState = TimestampPreviewPresenter.preview(
+        hasSelectedPhoto = hasSelectedPhoto,
+    )
 
     MaterialTheme(
         colorScheme = retroColorScheme(),
@@ -65,12 +72,14 @@ fun TimestampApp() {
                     timestamp = previewState.timestampLabel,
                     location = previewState.locationLabel,
                     helper = previewState.helperText,
+                    hasSelectedPhoto = hasSelectedPhoto,
+                    onPickPhoto = onPickPhoto,
                 )
 
                 RoadmapCard(
                     title = "다음 구현 순서",
                     lines = listOf(
-                        "1. 플랫폼별 사진 선택기 연결",
+                        "1. 선택한 이미지를 실제 프리뷰로 디코딩",
                         "2. 타임스탬프 스타일/위치 옵션 모델링",
                         "3. 실제 이미지 위 오버레이 렌더링",
                         "4. 저장 및 공유 파이프라인 정리",
@@ -86,6 +95,8 @@ private fun PreviewCard(
     timestamp: String,
     location: String,
     helper: String,
+    hasSelectedPhoto: Boolean,
+    onPickPhoto: () -> Unit,
 ) {
     Card(
         colors = CardDefaults.cardColors(
@@ -103,6 +114,16 @@ private fun PreviewCard(
                 text = "프리뷰 구조",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
+            )
+
+            Text(
+                text = if (hasSelectedPhoto) "사진 선택 완료" else "사진 미선택",
+                style = MaterialTheme.typography.labelLarge,
+                color = if (hasSelectedPhoto) {
+                    Color(0xFF2F6A3D)
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
             )
 
             Box(
@@ -125,6 +146,15 @@ private fun PreviewCard(
                         shape = RoundedCornerShape(22.dp),
                     ),
             ) {
+                if (!hasSelectedPhoto) {
+                    Text(
+                        text = "선택한 사진이 여기에 표시됩니다",
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color(0xFF4F4131),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+
                 Column(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
@@ -154,13 +184,15 @@ private fun PreviewCard(
                 style = MaterialTheme.typography.bodyMedium,
             )
 
+            HorizontalDivider(color = Color(0x14000000))
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Button(onClick = {}) {
+                Button(onClick = onPickPhoto) {
                     Text("사진 선택")
                 }
-                Button(onClick = {}, enabled = false) {
+                Button(onClick = {}, enabled = hasSelectedPhoto) {
                     Text("내보내기")
                 }
             }
