@@ -131,3 +131,46 @@ enum class TimestampOverlaySafeArea(
         exportKey = "strong",
     ),
 }
+
+enum class TimestampAspectRatioPreset(
+    val label: String,
+    val ratio: Float,
+    val exportKey: String,
+) {
+    FourThree(
+        label = "4:3",
+        ratio = 4f / 3f,
+        exportKey = "4_3",
+    ),
+    SixteenNine(
+        label = "16:9",
+        ratio = 16f / 9f,
+        exportKey = "16_9",
+    ),
+}
+
+enum class TimestampCropZoomPreset(
+    val label: String,
+    val previewScale: Float,
+    val exportScale: Float,
+    val exportKey: String,
+) {
+    Fit(
+        label = "기본",
+        previewScale = 1f,
+        exportScale = 1f,
+        exportKey = "fit",
+    ),
+    Close(
+        label = "가깝게",
+        previewScale = 1.15f,
+        exportScale = 1.15f,
+        exportKey = "close",
+    ),
+    Closer(
+        label = "더 가깝게",
+        previewScale = 1.3f,
+        exportScale = 1.3f,
+        exportKey = "closer",
+    ),
+}

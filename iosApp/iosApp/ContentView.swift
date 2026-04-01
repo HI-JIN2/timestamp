@@ -106,13 +106,29 @@ private func renderTimestampedImage(
     image: UIImage,
     request: TimestampExportRequest
 ) -> UIImage? {
-    let size = image.size
+    guard
+        let cgImage = image.cgImage,
+        let cropPreset = iosCropPreset(
+            aspectRatioKey: request.aspectRatioKey,
+            zoomKey: request.cropZoomKey,
+            offsetXStep: request.cropOffsetXStep,
+            offsetYStep: request.cropOffsetYStep,
+            width: CGFloat(cgImage.width),
+            height: CGFloat(cgImage.height)
+        ),
+        let croppedCgImage = cgImage.cropping(to: cropPreset.sourceRect)
+    else {
+        return nil
+    }
+
+    let croppedImage = UIImage(cgImage: croppedCgImage, scale: image.scale, orientation: image.imageOrientation)
+    let size = croppedImage.size
     let format = UIGraphicsImageRendererFormat.default()
-    format.scale = image.scale
+    format.scale = croppedImage.scale
     let renderer = UIGraphicsImageRenderer(size: size, format: format)
 
     return renderer.image { _ in
-        image.draw(in: CGRect(origin: .zero, size: size))
+        croppedImage.draw(in: CGRect(origin: .zero, size: size))
 
         let stylePreset = iosOverlayStylePreset(
             scaleKey: request.scaleKey,
@@ -166,6 +182,47 @@ private func renderTimestampedImage(
             withAttributes: locationAttributes
         )
     }
+}
+
+private func iosCropPreset(
+    aspectRatioKey: String,
+    zoomKey: String,
+    offsetXStep: Int,
+    offsetYStep: Int,
+    width: CGFloat,
+    height: CGFloat
+) -> (sourceRect: CGRect)? {
+    let aspectRatio: CGFloat = aspectRatioKey == "16_9" ? (16 / 9) : (4 / 3)
+    let zoom: CGFloat
+    switch zoomKey {
+    case "close":
+        zoom = 1.15
+    case "closer":
+        zoom = 1.3
+    default:
+        zoom = 1
+    }
+
+    let baseCropWidth: CGFloat
+    let baseCropHeight: CGFloat
+    if width / height > aspectRatio {
+        baseCropHeight = height
+        baseCropWidth = baseCropHeight * aspectRatio
+    } else {
+        baseCropWidth = width
+        baseCropHeight = baseCropWidth / aspectRatio
+    }
+
+    let cropWidth = baseCropWidth / zoom
+    let cropHeight = baseCropHeight / zoom
+    let maxShiftX = max((width - cropWidth) / 2, 0)
+    let maxShiftY = max((height - cropHeight) / 2, 0)
+    let centerX = width / 2 + (CGFloat(offsetXStep) / 3) * maxShiftX
+    let centerY = height / 2 + (CGFloat(offsetYStep) / 3) * maxShiftY
+    let left = min(max(centerX - cropWidth / 2, 0), width - cropWidth)
+    let top = min(max(centerY - cropHeight / 2, 0), height - cropHeight)
+
+    return (sourceRect: CGRect(x: left, y: top, width: cropWidth, height: cropHeight).integral)
 }
 
 private func iosOverlayStylePreset(scaleKey: String, insetKey: String, safeAreaKey: String) -> (timestampRatio: CGFloat, locationRatio: CGFloat, bottomInsetRatio: CGFloat, safeAreaExtraRatio: CGFloat) {

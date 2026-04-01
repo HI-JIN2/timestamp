@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Color.parseColor
+import android.graphics.Rect
 import android.net.Uri
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -116,8 +117,22 @@ class MainActivity : ComponentActivity() {
 
         val sourceBitmap = BitmapFactory.decodeByteArray(sourceBytes, 0, sourceBytes.size)
             ?: return null
-        val mutableBitmap = sourceBitmap.copy(Bitmap.Config.ARGB_8888, true)
+        val cropPreset = AndroidCropPreset.from(
+            aspectRatioKey = request.aspectRatioKey,
+            zoomKey = request.cropZoomKey,
+            offsetXStep = request.cropOffsetXStep,
+            offsetYStep = request.cropOffsetYStep,
+            sourceWidth = sourceBitmap.width,
+            sourceHeight = sourceBitmap.height,
+        )
+        val mutableBitmap = Bitmap.createBitmap(cropPreset.outputWidth, cropPreset.outputHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(mutableBitmap)
+        canvas.drawBitmap(
+            sourceBitmap,
+            cropPreset.sourceRect,
+            Rect(0, 0, cropPreset.outputWidth, cropPreset.outputHeight),
+            Paint(Paint.FILTER_BITMAP_FLAG),
+        )
 
         val stylePreset = AndroidOverlayStylePreset.from(
             scaleKey = request.scaleKey,
@@ -165,6 +180,63 @@ class MainActivity : ComponentActivity() {
         canvas.drawText(request.location, adjustedStartX, adjustedLocationBaseline, locationPaint)
 
         return mutableBitmap
+    }
+}
+
+private data class AndroidCropPreset(
+    val sourceRect: Rect,
+    val outputWidth: Int,
+    val outputHeight: Int,
+) {
+    companion object {
+        fun from(
+            aspectRatioKey: String,
+            zoomKey: String,
+            offsetXStep: Int,
+            offsetYStep: Int,
+            sourceWidth: Int,
+            sourceHeight: Int,
+        ): AndroidCropPreset {
+            val aspectRatio = when (aspectRatioKey) {
+                "16_9" -> 16f / 9f
+                else -> 4f / 3f
+            }
+            val zoom = when (zoomKey) {
+                "close" -> 1.15f
+                "closer" -> 1.3f
+                else -> 1f
+            }
+
+            val baseCropWidth: Float
+            val baseCropHeight: Float
+            if (sourceWidth.toFloat() / sourceHeight > aspectRatio) {
+                baseCropHeight = sourceHeight.toFloat()
+                baseCropWidth = baseCropHeight * aspectRatio
+            } else {
+                baseCropWidth = sourceWidth.toFloat()
+                baseCropHeight = baseCropWidth / aspectRatio
+            }
+
+            val cropWidth = baseCropWidth / zoom
+            val cropHeight = baseCropHeight / zoom
+            val maxShiftX = ((sourceWidth - cropWidth) / 2f).coerceAtLeast(0f)
+            val maxShiftY = ((sourceHeight - cropHeight) / 2f).coerceAtLeast(0f)
+            val centerX = sourceWidth / 2f + (offsetXStep / 3f) * maxShiftX
+            val centerY = sourceHeight / 2f + (offsetYStep / 3f) * maxShiftY
+            val left = (centerX - cropWidth / 2f).coerceIn(0f, sourceWidth - cropWidth)
+            val top = (centerY - cropHeight / 2f).coerceIn(0f, sourceHeight - cropHeight)
+
+            return AndroidCropPreset(
+                sourceRect = Rect(
+                    left.toInt(),
+                    top.toInt(),
+                    (left + cropWidth).toInt(),
+                    (top + cropHeight).toInt(),
+                ),
+                outputWidth = cropWidth.toInt(),
+                outputHeight = cropHeight.toInt(),
+            )
+        }
     }
 }
 

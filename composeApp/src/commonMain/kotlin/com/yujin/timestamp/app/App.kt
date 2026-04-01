@@ -3,6 +3,7 @@ package com.yujin.timestamp.app
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -35,7 +36,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -72,6 +75,10 @@ fun TimestampApp(
     var overlaySafeArea by remember { mutableStateOf(TimestampOverlaySafeArea.Standard) }
     var overlayOffsetXStep by remember { mutableStateOf(0) }
     var overlayOffsetYStep by remember { mutableStateOf(0) }
+    var aspectRatioPreset by remember { mutableStateOf(TimestampAspectRatioPreset.FourThree) }
+    var cropZoomPreset by remember { mutableStateOf(TimestampCropZoomPreset.Fit) }
+    var cropOffsetXStep by remember { mutableStateOf(0) }
+    var cropOffsetYStep by remember { mutableStateOf(0) }
 
     MaterialTheme(
         colorScheme = retroColorScheme(),
@@ -114,6 +121,10 @@ fun TimestampApp(
                     overlaySafeArea = overlaySafeArea,
                     overlayOffsetXStep = overlayOffsetXStep,
                     overlayOffsetYStep = overlayOffsetYStep,
+                    aspectRatioPreset = aspectRatioPreset,
+                    cropZoomPreset = cropZoomPreset,
+                    cropOffsetXStep = cropOffsetXStep,
+                    cropOffsetYStep = cropOffsetYStep,
                     onTimestampChange = { editableTimestamp = it },
                     onResetTimestamp = {
                         editableTimestamp = previewState.timestampLabel
@@ -125,6 +136,10 @@ fun TimestampApp(
                     onSafeAreaChange = { overlaySafeArea = it },
                     onOffsetXChange = { overlayOffsetXStep = it.coerceIn(-3, 3) },
                     onOffsetYChange = { overlayOffsetYStep = it.coerceIn(-3, 3) },
+                    onAspectRatioChange = { aspectRatioPreset = it },
+                    onCropZoomChange = { cropZoomPreset = it },
+                    onCropOffsetXChange = { cropOffsetXStep = it.coerceIn(-3, 3) },
+                    onCropOffsetYChange = { cropOffsetYStep = it.coerceIn(-3, 3) },
                     exportMessage = exportMessage,
                     onPickPhoto = onPickPhoto,
                     onExport = {
@@ -143,6 +158,10 @@ fun TimestampApp(
                                 safeAreaKey = overlaySafeArea.exportKey,
                                 offsetXStep = overlayOffsetXStep,
                                 offsetYStep = overlayOffsetYStep,
+                                aspectRatioKey = aspectRatioPreset.exportKey,
+                                cropZoomKey = cropZoomPreset.exportKey,
+                                cropOffsetXStep = cropOffsetXStep,
+                                cropOffsetYStep = cropOffsetYStep,
                             ),
                         )
                     },
@@ -177,6 +196,10 @@ private fun PreviewCard(
     overlaySafeArea: TimestampOverlaySafeArea,
     overlayOffsetXStep: Int,
     overlayOffsetYStep: Int,
+    aspectRatioPreset: TimestampAspectRatioPreset,
+    cropZoomPreset: TimestampCropZoomPreset,
+    cropOffsetXStep: Int,
+    cropOffsetYStep: Int,
     onTimestampChange: (String) -> Unit,
     onResetTimestamp: () -> Unit,
     onToneChange: (TimestampOverlayTone) -> Unit,
@@ -186,6 +209,10 @@ private fun PreviewCard(
     onSafeAreaChange: (TimestampOverlaySafeArea) -> Unit,
     onOffsetXChange: (Int) -> Unit,
     onOffsetYChange: (Int) -> Unit,
+    onAspectRatioChange: (TimestampAspectRatioPreset) -> Unit,
+    onCropZoomChange: (TimestampCropZoomPreset) -> Unit,
+    onCropOffsetXChange: (Int) -> Unit,
+    onCropOffsetYChange: (Int) -> Unit,
     exportMessage: String?,
     onPickPhoto: () -> Unit,
     onExport: () -> Unit,
@@ -221,7 +248,7 @@ private fun PreviewCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(280.dp)
+                    .aspectRatio(aspectRatioPreset.ratio)
                     .clip(RoundedCornerShape(22.dp))
                     .background(
                         brush = Brush.verticalGradient(
@@ -239,11 +266,11 @@ private fun PreviewCard(
                     ),
             ) {
                 if (previewImage != null) {
-                    Image(
-                        bitmap = previewImage,
-                        contentDescription = "선택한 사진 프리뷰",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
+                    CroppedPreviewImage(
+                        previewImage = previewImage,
+                        cropZoomPreset = cropZoomPreset,
+                        cropOffsetXStep = cropOffsetXStep,
+                        cropOffsetYStep = cropOffsetYStep,
                     )
                 } else if (!hasSelectedPhoto) {
                     Text(
@@ -346,6 +373,34 @@ private fun PreviewCard(
                 onValueChange = onOffsetYChange,
             )
 
+            OverlayControlRow(
+                label = "비율 선택",
+                options = TimestampAspectRatioPreset.entries,
+                selected = aspectRatioPreset,
+                optionLabel = { it.label },
+                onSelected = onAspectRatioChange,
+            )
+
+            OverlayControlRow(
+                label = "크롭 줌",
+                options = TimestampCropZoomPreset.entries,
+                selected = cropZoomPreset,
+                optionLabel = { it.label },
+                onSelected = onCropZoomChange,
+            )
+
+            NudgeControlRow(
+                label = "크롭 좌우 구도",
+                value = cropOffsetXStep,
+                onValueChange = onCropOffsetXChange,
+            )
+
+            NudgeControlRow(
+                label = "크롭 상하 구도",
+                value = cropOffsetYStep,
+                onValueChange = onCropOffsetYChange,
+            )
+
             HorizontalDivider(color = Color(0x14000000))
 
             Row(
@@ -369,6 +424,29 @@ private fun PreviewCard(
             }
         }
     }
+}
+
+@Composable
+private fun CroppedPreviewImage(
+    previewImage: ImageBitmap,
+    cropZoomPreset: TimestampCropZoomPreset,
+    cropOffsetXStep: Int,
+    cropOffsetYStep: Int,
+) {
+    Image(
+        bitmap = previewImage,
+        contentDescription = "선택한 사진 프리뷰",
+        modifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer(
+                scaleX = cropZoomPreset.previewScale,
+                scaleY = cropZoomPreset.previewScale,
+                translationX = cropOffsetXStep * 18f,
+                translationY = cropOffsetYStep * 18f,
+                transformOrigin = TransformOrigin.Center,
+            ),
+        contentScale = ContentScale.Crop,
+    )
 }
 
 @Composable
