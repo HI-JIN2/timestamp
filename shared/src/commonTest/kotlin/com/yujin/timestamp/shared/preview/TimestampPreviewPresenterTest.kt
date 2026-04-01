@@ -9,6 +9,7 @@ class TimestampPreviewPresenterTest {
     fun preview_usesExpectedRetroLabelShape() {
         val preview = TimestampPreviewPresenter.preview(
             hasSelectedPhoto = false,
+            metadataTimestampLabel = null,
         )
 
         assertTrue(
@@ -21,8 +22,10 @@ class TimestampPreviewPresenterTest {
     fun preview_updatesHelperTextAfterPhotoSelection() {
         val preview = TimestampPreviewPresenter.preview(
             hasSelectedPhoto = true,
+            metadataTimestampLabel = "03.29.26  09:14",
         )
 
-        assertTrue(preview.helperText.contains("선택한 사진 데이터"))
+        assertTrue(preview.helperText.contains("메타데이터 날짜"))
+        assertEquals("기본값: 사진 메타데이터 촬영 일시", preview.metadataDescription)
     }
 }

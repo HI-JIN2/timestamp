@@ -2,6 +2,7 @@ package com.yujin.timestamp.app
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,17 +17,24 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yujin.timestamp.shared.preview.TimestampPreviewPresenter
@@ -34,12 +42,20 @@ import com.yujin.timestamp.shared.preview.TimestampPreviewPresenter
 @Composable
 fun TimestampApp(
     selectedImageBase64: String? = null,
+    metadataTimestampLabel: String? = null,
     onPickPhoto: () -> Unit = {},
 ) {
-    val hasSelectedPhoto = selectedImageBase64 != null
+    val previewImage = remember(selectedImageBase64) {
+        selectedImageBase64?.let(::decodeSelectedImage)
+    }
+    val hasSelectedPhoto = previewImage != null || selectedImageBase64 != null
     val previewState = TimestampPreviewPresenter.preview(
         hasSelectedPhoto = hasSelectedPhoto,
+        metadataTimestampLabel = metadataTimestampLabel,
     )
+    var editableTimestamp by remember(selectedImageBase64, metadataTimestampLabel) {
+        mutableStateOf(previewState.timestampLabel)
+    }
 
     MaterialTheme(
         colorScheme = retroColorScheme(),
@@ -69,10 +85,16 @@ fun TimestampApp(
                 )
 
                 PreviewCard(
-                    timestamp = previewState.timestampLabel,
+                    timestamp = editableTimestamp,
+                    metadataDescription = previewState.metadataDescription,
                     location = previewState.locationLabel,
                     helper = previewState.helperText,
                     hasSelectedPhoto = hasSelectedPhoto,
+                    previewImage = previewImage,
+                    onTimestampChange = { editableTimestamp = it },
+                    onResetTimestamp = {
+                        editableTimestamp = previewState.timestampLabel
+                    },
                     onPickPhoto = onPickPhoto,
                 )
 
@@ -93,9 +115,13 @@ fun TimestampApp(
 @Composable
 private fun PreviewCard(
     timestamp: String,
+    metadataDescription: String,
     location: String,
     helper: String,
     hasSelectedPhoto: Boolean,
+    previewImage: ImageBitmap?,
+    onTimestampChange: (String) -> Unit,
+    onResetTimestamp: () -> Unit,
     onPickPhoto: () -> Unit,
 ) {
     Card(
@@ -146,7 +172,14 @@ private fun PreviewCard(
                         shape = RoundedCornerShape(22.dp),
                     ),
             ) {
-                if (!hasSelectedPhoto) {
+                if (previewImage != null) {
+                    Image(
+                        bitmap = previewImage,
+                        contentDescription = "선택한 사진 프리뷰",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                    )
+                } else if (!hasSelectedPhoto) {
                     Text(
                         text = "선택한 사진이 여기에 표시됩니다",
                         modifier = Modifier.align(Alignment.Center),
@@ -184,6 +217,19 @@ private fun PreviewCard(
                 style = MaterialTheme.typography.bodyMedium,
             )
 
+            OutlinedTextField(
+                value = timestamp,
+                onValueChange = onTimestampChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = {
+                    Text("타임스탬프")
+                },
+                supportingText = {
+                    Text(metadataDescription)
+                },
+                singleLine = true,
+            )
+
             HorizontalDivider(color = Color(0x14000000))
 
             Row(
@@ -192,7 +238,13 @@ private fun PreviewCard(
                 Button(onClick = onPickPhoto) {
                     Text("사진 선택")
                 }
-                Button(onClick = {}, enabled = hasSelectedPhoto) {
+                Button(
+                    onClick = onResetTimestamp,
+                    enabled = hasSelectedPhoto,
+                ) {
+                    Text("기본값 복원")
+                }
+                Button(onClick = {}, enabled = hasSelectedPhoto && timestamp.isNotBlank()) {
                     Text("내보내기")
                 }
             }
