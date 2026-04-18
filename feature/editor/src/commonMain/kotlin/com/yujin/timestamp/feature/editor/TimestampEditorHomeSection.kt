@@ -21,6 +21,8 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.resources.stringResource
+import timestamp.feature.editor.generated.resources.*
 
 @Composable
 internal fun EditorHomeSection(
@@ -39,7 +41,7 @@ internal fun EditorHomeSection(
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         Text(
-            text = "Timestamp",
+            text = stringResource(Res.string.editor_title),
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.2.sp,
@@ -75,7 +77,9 @@ private fun HomeActionRow(
         ) {
             Icon(
                 imageVector = Icons.Rounded.PhotoLibrary,
-                contentDescription = if (hasSelectedPhoto) "사진 다시 선택" else "사진 선택",
+                contentDescription = stringResource(
+                    if (hasSelectedPhoto) Res.string.pick_photo_again else Res.string.pick_photo,
+                ),
             )
         }
         Button(
@@ -87,7 +91,7 @@ private fun HomeActionRow(
         ) {
             Icon(
                 imageVector = Icons.Rounded.Crop,
-                contentDescription = "크롭 편집",
+                contentDescription = stringResource(Res.string.crop_editor),
             )
         }
     }

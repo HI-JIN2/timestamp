@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Timestamp</string>
+    <string name="export_failed_image_prepare">Failed to save the image.</string>
+    <string name="export_failed_create_entry">Failed to create the media entry.</string>
+    <string name="export_success_saved">Saved to the Pictures/Timestamp folder in your gallery.</string>
+    <string name="export_failed_save">Failed to save the image.</string>
 </resources>
-

@@ -1,0 +1,5 @@
+"picker_cancel" = "Cancel";
+"picker_done" = "Done";
+"export_failed_prepare" = "Failed to prepare the image.";
+"export_failed_present_share" = "Failed to open the share sheet.";
+"export_share_opened" = "Share sheet opened. Use \"Save Image\" to store it in Photos.";

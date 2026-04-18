@@ -51,12 +51,12 @@ struct ContentView: View {
                     .padding()
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
-                            Button("취소") {
+                            Button(localized("picker_cancel")) {
                                 isTimestampPickerPresented = false
                             }
                         }
                         ToolbarItem(placement: .confirmationAction) {
-                            Button("완료") {
+                            Button(localized("picker_done")) {
                                 selectedTimestampLabel = timestampFormatter.string(from: pendingTimestampDate)
                                 isTimestampPickerPresented = false
                             }
@@ -130,7 +130,7 @@ private func exportTimestampedImage(_ request: TimestampExportRequest) -> String
         let image = UIImage(data: imageData),
         let renderedImage = renderTimestampedImage(image: image, request: request)
     else {
-        return "이미지를 준비하지 못했습니다."
+        return localized("export_failed_prepare")
     }
 
     let activityController = UIActivityViewController(
@@ -139,7 +139,7 @@ private func exportTimestampedImage(_ request: TimestampExportRequest) -> String
     )
 
     guard let rootViewController = currentRootViewController() else {
-        return "공유 시트를 열지 못했습니다."
+        return localized("export_failed_present_share")
     }
 
     if let popover = activityController.popoverPresentationController {
@@ -153,7 +153,11 @@ private func exportTimestampedImage(_ request: TimestampExportRequest) -> String
     }
 
     rootViewController.present(activityController, animated: true)
-    return "공유 시트를 열었습니다. '이미지 저장'으로 사진 앱에 저장할 수 있습니다."
+    return localized("export_share_opened")
+}
+
+private func localized(_ key: String) -> String {
+    NSLocalizedString(key, comment: "")
 }
 
 private func renderTimestampedImage(

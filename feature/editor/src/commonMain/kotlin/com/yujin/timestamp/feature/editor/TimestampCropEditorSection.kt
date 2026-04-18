@@ -15,7 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import timestamp.feature.editor.generated.resources.*
 
 @Composable
 internal fun CropEditorSection(
@@ -75,9 +78,9 @@ private fun CropEditorHeader(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "크롭 편집",
+            text = stringResource(Res.string.crop_editor_title),
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            fontWeight = FontWeight.Bold,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(
@@ -85,14 +88,14 @@ private fun CropEditorHeader(
                 shape = RectangleShape,
                 colors = retroActionButtonColors(),
             ) {
-                Text("초기화")
+                Text(stringResource(Res.string.reset))
             }
             Button(
                 onClick = onClose,
                 shape = RectangleShape,
                 colors = retroActionButtonColors(),
             ) {
-                Text("완료")
+                Text(stringResource(Res.string.done))
             }
         }
     }
@@ -104,10 +107,10 @@ private fun CropAspectRatioRow(
     onSelected: (TimestampAspectRatioPreset) -> Unit,
 ) {
     OverlayControlRow(
-        label = "크롭 비율",
+        label = stringResource(Res.string.crop_ratio),
         options = TimestampAspectRatioPreset.entries,
         selected = selected,
-        optionLabel = { it.label },
+        optionLabelRes = { it.labelRes },
         onSelected = onSelected,
     )
 }

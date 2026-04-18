@@ -24,6 +24,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import timestamp.feature.editor.generated.resources.*
 import kotlin.math.roundToInt
 
 @Composable
@@ -85,7 +87,7 @@ internal fun CropGestureSurface(
         ) {
             Image(
                 bitmap = previewImage,
-                contentDescription = "크롭 편집 사진",
+                contentDescription = stringResource(Res.string.crop_image_description),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit,
             )

@@ -1,0 +1,5 @@
+"picker_cancel" = "취소";
+"picker_done" = "완료";
+"export_failed_prepare" = "이미지를 준비하지 못했습니다.";
+"export_failed_present_share" = "공유 시트를 열지 못했습니다.";
+"export_share_opened" = "공유 시트를 열었습니다. '이미지 저장'으로 사진 앱에 저장할 수 있습니다.";

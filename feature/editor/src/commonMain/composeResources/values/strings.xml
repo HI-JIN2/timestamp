@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="editor_title">Timestamp</string>
+    <string name="pick_photo">Pick Photo</string>
+    <string name="pick_photo_again">Pick Photo Again</string>
+    <string name="crop_editor">Crop</string>
+    <string name="crop_editor_title">Crop</string>
+    <string name="reset">Reset</string>
+    <string name="done">Done</string>
+    <string name="crop_ratio">Crop Ratio</string>
+    <string name="overlay_tone">Overlay Tone</string>
+    <string name="reset_default">Reset Default</string>
+    <string name="export">Export</string>
+    <string name="preview_placeholder">Selected photo will appear here.</string>
+    <string name="preview_image_description">Selected photo preview</string>
+    <string name="crop_image_description">Photo for crop editing</string>
+    <string name="tone_classic">Classic</string>
+    <string name="tone_burnt">Burnt</string>
+    <string name="tone_film">Film</string>
+    <string name="overlay_alignment_bottom_start">Bottom Left</string>
+    <string name="overlay_alignment_bottom_end">Bottom Right</string>
+    <string name="overlay_scale_small">Small</string>
+    <string name="overlay_scale_medium">Medium</string>
+    <string name="overlay_scale_large">Large</string>
+    <string name="overlay_inset_tight">Tight</string>
+    <string name="overlay_inset_balanced">Balanced</string>
+    <string name="overlay_inset_spacious">Spacious</string>
+    <string name="overlay_safe_area_off">Off</string>
+    <string name="overlay_safe_area_standard">Standard</string>
+    <string name="overlay_safe_area_strong">Strong</string>
+    <string name="aspect_ratio_four_three">4:3</string>
+    <string name="aspect_ratio_sixteen_nine">16:9</string>
+</resources>

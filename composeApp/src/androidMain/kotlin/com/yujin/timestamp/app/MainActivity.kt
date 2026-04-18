@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.yujin.timestamp.R
 import com.yujin.timestamp.core.model.TimestampExportRequest
 import com.yujin.timestamp.core.model.TimestampImagePayload
 import com.yujin.timestamp.feature.editor.TimestampEditorRoute
@@ -97,7 +98,7 @@ class MainActivity : ComponentActivity() {
 
     private fun exportTimestampedImage(request: TimestampExportRequest): String {
         val renderedBitmap = renderTimestampedBitmap(request)
-            ?: return "이미지를 저장하지 못했습니다."
+            ?: return getString(R.string.export_failed_image_prepare)
 
         val fileName = "timestamp-${System.currentTimeMillis()}.jpg"
         val contentValues = ContentValues().apply {
@@ -111,17 +112,17 @@ class MainActivity : ComponentActivity() {
         val uri = resolver.insert(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             contentValues,
-        ) ?: return "저장소 항목을 만들지 못했습니다."
+        ) ?: return getString(R.string.export_failed_create_entry)
 
         return runCatching {
             resolver.openOutputStream(uri).useBitmap(renderedBitmap)
             contentValues.clear()
             contentValues.put(MediaStore.Images.Media.IS_PENDING, 0)
             resolver.update(uri, contentValues, null, null)
-            "사진을 갤러리의 Pictures/Timestamp 폴더에 저장했습니다."
+            getString(R.string.export_success_saved)
         }.getOrElse {
             resolver.delete(uri, null, null)
-            "이미지를 저장하지 못했습니다."
+            getString(R.string.export_failed_save)
         }
     }
 

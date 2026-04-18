@@ -34,6 +34,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.resources.stringResource
+import timestamp.feature.editor.generated.resources.*
 
 @Composable
 internal fun PreviewPanel(
@@ -70,10 +72,10 @@ internal fun PreviewPanel(
             }
 
             OverlayControlRow(
-                label = "오버레이 톤",
+                label = stringResource(Res.string.overlay_tone),
                 options = TimestampOverlayTone.entries,
                 selected = state.overlayTone,
-                optionLabel = { it.label },
+                optionLabelRes = { it.labelRes },
                 onSelected = { onIntent(TimestampEditorUiContract.Intent.ToneChanged(it)) },
             )
 
@@ -109,7 +111,7 @@ private fun PreviewCanvas(
             )
         } else if (!state.hasSelectedPhoto) {
             Text(
-                text = "선택한 사진이 여기에 표시됩니다",
+                text = stringResource(Res.string.preview_placeholder),
                 modifier = Modifier.align(Alignment.Center),
                 color = palette.placeholderText,
                 style = MaterialTheme.typography.bodyLarge,
@@ -144,7 +146,7 @@ private fun PrimaryActionRow(
             shape = RectangleShape,
             colors = retroActionButtonColors(),
         ) {
-            Text("기본값 복원")
+            Text(stringResource(Res.string.reset_default))
         }
         Button(
             onClick = onExport,
@@ -152,7 +154,7 @@ private fun PrimaryActionRow(
             shape = RectangleShape,
             colors = retroActionButtonColors(),
         ) {
-            Text("내보내기")
+            Text(stringResource(Res.string.export))
         }
     }
 }
@@ -166,7 +168,7 @@ private fun GestureDrivenImage(
 ) {
     Image(
         bitmap = previewImage,
-        contentDescription = "선택한 사진 프리뷰",
+        contentDescription = stringResource(Res.string.preview_image_description),
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer(

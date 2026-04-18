@@ -2,9 +2,11 @@ package com.yujin.timestamp.feature.editor
 
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import org.jetbrains.compose.resources.StringResource
+import timestamp.feature.editor.generated.resources.*
 
 enum class TimestampOverlayTone(
-    val label: String,
+    val labelRes: StringResource,
     val timestampColor: Color,
     val locationColor: Color,
     val shadowColor: Color,
@@ -13,7 +15,7 @@ enum class TimestampOverlayTone(
     val shadowColorHex: String,
 ) {
     ClassicAmber(
-        label = "클래식",
+        labelRes = Res.string.tone_classic,
         timestampColor = Color(0xFFFFA347),
         locationColor = Color(0xFFF7E7C6),
         shadowColor = Color(0xA6000000),
@@ -22,7 +24,7 @@ enum class TimestampOverlayTone(
         shadowColorHex = "#A6000000",
     ),
     BurntOrange(
-        label = "번트",
+        labelRes = Res.string.tone_burnt,
         timestampColor = Color(0xFFFF7A2F),
         locationColor = Color(0xFFFFD4B0),
         shadowColor = Color(0x99000000),
@@ -31,7 +33,7 @@ enum class TimestampOverlayTone(
         shadowColorHex = "#99000000",
     ),
     FilmRed(
-        label = "필름",
+        labelRes = Res.string.tone_film,
         timestampColor = Color(0xFFFF6B5E),
         locationColor = Color(0xFFFFD7D1),
         shadowColor = Color(0x99000000),
@@ -42,51 +44,51 @@ enum class TimestampOverlayTone(
 }
 
 enum class TimestampOverlayAlignment(
-    val label: String,
+    val labelRes: StringResource,
     val containerAlignment: Alignment,
     val exportKey: String,
 ) {
-    BottomStart("좌하단", Alignment.BottomStart, "bottom_start"),
-    BottomEnd("우하단", Alignment.BottomEnd, "bottom_end"),
+    BottomStart(Res.string.overlay_alignment_bottom_start, Alignment.BottomStart, "bottom_start"),
+    BottomEnd(Res.string.overlay_alignment_bottom_end, Alignment.BottomEnd, "bottom_end"),
 }
 
 enum class TimestampOverlayScale(
-    val label: String,
+    val labelRes: StringResource,
     val timestampFontSp: Int,
     val locationFontSp: Int,
     val exportKey: String,
 ) {
-    Small("작게", 11, 6, "small"),
-    Medium("보통", 28, 14, "medium"),
-    Large("크게", 32, 16, "large"),
+    Small(Res.string.overlay_scale_small, 11, 6, "small"),
+    Medium(Res.string.overlay_scale_medium, 28, 14, "medium"),
+    Large(Res.string.overlay_scale_large, 32, 16, "large"),
 }
 
 enum class TimestampOverlayInset(
-    val label: String,
+    val labelRes: StringResource,
     val previewPaddingDp: Int,
     val exportKey: String,
 ) {
-    Tight("가깝게", 14, "tight"),
-    Balanced("기본", 18, "balanced"),
-    Spacious("여유", 24, "spacious"),
+    Tight(Res.string.overlay_inset_tight, 14, "tight"),
+    Balanced(Res.string.overlay_inset_balanced, 18, "balanced"),
+    Spacious(Res.string.overlay_inset_spacious, 24, "spacious"),
 }
 
 enum class TimestampOverlaySafeArea(
-    val label: String,
+    val labelRes: StringResource,
     val extraPreviewBottomDp: Int,
     val exportExtraBottomRatio: Float,
     val exportKey: String,
 ) {
-    Off("없음", 0, 0f, "off"),
-    Standard("기본", 10, 0.025f, "standard"),
-    Strong("넓게", 20, 0.05f, "strong"),
+    Off(Res.string.overlay_safe_area_off, 0, 0f, "off"),
+    Standard(Res.string.overlay_safe_area_standard, 10, 0.025f, "standard"),
+    Strong(Res.string.overlay_safe_area_strong, 20, 0.05f, "strong"),
 }
 
 enum class TimestampAspectRatioPreset(
-    val label: String,
+    val labelRes: StringResource,
     val ratio: Float,
     val exportKey: String,
 ) {
-    FourThree("4:3", 4f / 3f, "4_3"),
-    SixteenNine("16:9", 16f / 9f, "16_9"),
+    FourThree(Res.string.aspect_ratio_four_three, 4f / 3f, "4_3"),
+    SixteenNine(Res.string.aspect_ratio_sixteen_nine, 16f / 9f, "16_9"),
 }

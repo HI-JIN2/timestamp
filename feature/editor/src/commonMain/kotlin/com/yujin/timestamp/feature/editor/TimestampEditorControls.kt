@@ -12,13 +12,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun <T> OverlayControlRow(
     label: String,
     options: List<T>,
     selected: T,
-    optionLabel: (T) -> String,
+    optionLabelRes: (T) -> StringResource,
     onSelected: (T) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -42,7 +44,7 @@ internal fun <T> OverlayControlRow(
                         selectedContainerColor = MaterialTheme.colorScheme.primary,
                         selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
                     ),
-                    label = { Text(optionLabel(option)) },
+                    label = { Text(stringResource(optionLabelRes(option))) },
                 )
             }
         }
