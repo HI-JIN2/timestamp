@@ -33,6 +33,7 @@ object TimestampEditorContract {
             val selectedImageBase64: String?,
             val previewImage: ImageBitmap?,
             val metadataTimestampLabel: String?,
+            val selectedTimestampLabel: String?,
             val exportMessage: String?,
         ) : Intent
 

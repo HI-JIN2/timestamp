@@ -1,6 +1,8 @@
 package com.yujin.timestamp.app
 
 import android.content.ContentValues
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -34,24 +36,30 @@ class MainActivity : ComponentActivity() {
         setContent {
             var selectedImagePayload by remember { mutableStateOf<TimestampImagePayload?>(null) }
             var metadataTimestampLabel by remember { mutableStateOf<String?>(null) }
+            var selectedTimestampLabel by remember { mutableStateOf<String?>(null) }
             var exportMessage by remember { mutableStateOf<String?>(null) }
             val imagePicker = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.PickVisualMedia(),
             ) { uri ->
                 selectedImagePayload = uri?.readImagePayload()
                 metadataTimestampLabel = selectedImagePayload?.metadataTimestampLabel
+                selectedTimestampLabel = null
                 exportMessage = null
             }
 
             TimestampEditorRoute(
                 selectedImageBase64 = selectedImagePayload?.base64,
                 metadataTimestampLabel = metadataTimestampLabel,
+                selectedTimestampLabel = selectedTimestampLabel,
                 exportMessage = exportMessage,
                 onExportMessageConsumed = { exportMessage = null },
                 onPickPhoto = {
                     imagePicker.launch(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
                     )
+                },
+                onEditTimestampRequest = { currentTimestamp ->
+                    showTimestampPicker(currentTimestamp) { selectedTimestampLabel = it }
                 },
                 onExport = { request ->
                     exportMessage = exportTimestampedImage(request)
@@ -188,7 +196,41 @@ class MainActivity : ComponentActivity() {
 
         return mutableBitmap
     }
+
+    private fun showTimestampPicker(
+        currentTimestamp: String,
+        onSelected: (String) -> Unit,
+    ) {
+        val initialDateTime = currentTimestamp.toTimestampDateTime()
+        DatePickerDialog(
+            this,
+            { _, year, month, dayOfMonth ->
+                TimePickerDialog(
+                    this,
+                    { _, hourOfDay, minute ->
+                        onSelected(
+                            LocalDateTime.of(year, month + 1, dayOfMonth, hourOfDay, minute)
+                                .format(TIMESTAMP_FORMATTER),
+                        )
+                    },
+                    initialDateTime.hour,
+                    initialDateTime.minute,
+                    true,
+                ).show()
+            },
+            initialDateTime.year,
+            initialDateTime.monthValue - 1,
+            initialDateTime.dayOfMonth,
+        ).show()
+    }
+
+    private fun String.toTimestampDateTime(): LocalDateTime {
+        return runCatching { LocalDateTime.parse(this, TIMESTAMP_FORMATTER) }
+            .getOrElse { LocalDateTime.now() }
+    }
 }
+
+private val TIMESTAMP_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("MM.dd.yy  HH:mm")
 
 private data class AndroidCropPreset(
     val sourceRect: Rect,

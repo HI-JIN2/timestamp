@@ -6,35 +6,72 @@ import ComposeApp
 
 struct ContentView: View {
     @State private var isPhotoPickerPresented = false
+    @State private var isTimestampPickerPresented = false
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var selectedImageBase64: String?
     @State private var metadataTimestampLabel: String?
+    @State private var selectedTimestampLabel: String?
+    @State private var pendingTimestampDate = Date()
     @State private var exportMessage: String?
 
     var body: some View {
         ComposeView(
             selectedImageBase64: selectedImageBase64,
             metadataTimestampLabel: metadataTimestampLabel,
+            selectedTimestampLabel: selectedTimestampLabel,
             exportMessage: exportMessage,
             onPickPhotoRequest: { isPhotoPickerPresented = true },
+            onEditTimestampRequest: { currentTimestamp in
+                pendingTimestampDate = parseTimestampLabel(currentTimestamp) ?? Date()
+                isTimestampPickerPresented = true
+            },
             onExportRequest: { request in
                 exportMessage = exportTimestampedImage(request)
             },
             onExportMessageConsumed: { exportMessage = nil }
         )
-            .id("\(selectedImageBase64 ?? "empty")-\(exportMessage ?? "")")
+            .id("\(selectedImageBase64 ?? "empty")-\(selectedTimestampLabel ?? "default")-\(exportMessage ?? "")")
             .ignoresSafeArea(.keyboard)
             .photosPicker(
                 isPresented: $isPhotoPickerPresented,
                 selection: $selectedPhotoItem,
                 matching: .images
             )
+            .sheet(isPresented: $isTimestampPickerPresented) {
+                NavigationStack {
+                    VStack {
+                        DatePicker(
+                            "",
+                            selection: $pendingTimestampDate,
+                            displayedComponents: [.date, .hourAndMinute]
+                        )
+                        .datePickerStyle(.graphical)
+                        .labelsHidden()
+                    }
+                    .padding()
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("취소") {
+                                isTimestampPickerPresented = false
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("완료") {
+                                selectedTimestampLabel = timestampFormatter.string(from: pendingTimestampDate)
+                                isTimestampPickerPresented = false
+                            }
+                        }
+                    }
+                }
+                .presentationDetents([.medium])
+            }
             .task(id: selectedPhotoItem) {
                 guard let selectedPhotoItem else { return }
                 if let data = try? await selectedPhotoItem.loadTransferable(type: Data.self) {
                     selectedImageBase64 = data.base64EncodedString()
                     metadataTimestampLabel = selectedPhotoItem.itemIdentifier
                         .flatMap(fetchAssetDateLabel(for:))
+                    selectedTimestampLabel = nil
                     exportMessage = nil
                 }
             }
@@ -44,8 +81,10 @@ struct ContentView: View {
 private struct ComposeView: UIViewControllerRepresentable {
     let selectedImageBase64: String?
     let metadataTimestampLabel: String?
+    let selectedTimestampLabel: String?
     let exportMessage: String?
     let onPickPhotoRequest: () -> Void
+    let onEditTimestampRequest: (String) -> Void
     let onExportRequest: (TimestampExportRequest) -> Void
     let onExportMessageConsumed: () -> Void
 
@@ -53,8 +92,10 @@ private struct ComposeView: UIViewControllerRepresentable {
         MainViewControllerKt.MainViewController(
             selectedImageBase64: selectedImageBase64,
             metadataTimestampLabel: metadataTimestampLabel,
+            selectedTimestampLabel: selectedTimestampLabel,
             exportMessage: exportMessage,
             onPickPhoto: onPickPhotoRequest,
+            onEditTimestampRequest: onEditTimestampRequest,
             onExport: onExportRequest,
             onExportMessageConsumed: onExportMessageConsumed
         )
@@ -71,6 +112,16 @@ private func fetchAssetDateLabel(for itemIdentifier: String) -> String? {
     let formatter = DateFormatter()
     formatter.dateFormat = "MM.dd.yy  HH:mm"
     return formatter.string(from: date)
+}
+
+private let timestampFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "MM.dd.yy  HH:mm"
+    return formatter
+}()
+
+private func parseTimestampLabel(_ value: String) -> Date? {
+    timestampFormatter.date(from: value)
 }
 
 private func exportTimestampedImage(_ request: TimestampExportRequest) -> String {

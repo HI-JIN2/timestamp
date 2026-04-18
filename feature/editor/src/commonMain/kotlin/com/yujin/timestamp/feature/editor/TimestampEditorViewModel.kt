@@ -81,7 +81,11 @@ class TimestampEditorViewModel(
             previewImage = intent.previewImage,
             hasSelectedPhoto = hasSelectedPhoto,
             defaultTimestamp = preview.timestampLabel,
-            timestamp = if (shouldResetTimestamp) preview.timestampLabel else state.timestamp,
+            timestamp = when {
+                intent.selectedTimestampLabel != null -> intent.selectedTimestampLabel
+                shouldResetTimestamp -> preview.timestampLabel
+                else -> state.timestamp
+            },
             location = preview.locationLabel,
             exportMessage = intent.exportMessage,
         )

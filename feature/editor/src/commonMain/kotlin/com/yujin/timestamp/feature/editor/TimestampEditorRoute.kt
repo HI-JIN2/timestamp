@@ -26,7 +26,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarData
@@ -71,8 +70,10 @@ import kotlin.math.roundToInt
 fun TimestampEditorRoute(
     selectedImageBase64: String? = null,
     metadataTimestampLabel: String? = null,
+    selectedTimestampLabel: String? = null,
     exportMessage: String? = null,
     onPickPhoto: () -> Unit = {},
+    onEditTimestampRequest: (String) -> Unit = {},
     onExport: (TimestampExportRequest) -> Unit = {},
     onExportMessageConsumed: () -> Unit = {},
 ) {
@@ -83,12 +84,13 @@ fun TimestampEditorRoute(
         TimestampEditorViewModel(GetTimestampPreviewStateUseCase())
     }
 
-    LaunchedEffect(selectedImageBase64, metadataTimestampLabel, exportMessage, previewImage) {
+    LaunchedEffect(selectedImageBase64, metadataTimestampLabel, selectedTimestampLabel, exportMessage, previewImage) {
         viewModel.dispatch(
             TimestampEditorContract.Intent.SyncExternal(
                 selectedImageBase64 = selectedImageBase64,
                 previewImage = previewImage,
                 metadataTimestampLabel = metadataTimestampLabel,
+                selectedTimestampLabel = selectedTimestampLabel,
                 exportMessage = exportMessage,
             ),
         )
@@ -100,6 +102,7 @@ fun TimestampEditorRoute(
         state = state,
         onIntent = viewModel::dispatch,
         onPickPhoto = onPickPhoto,
+        onEditTimestampRequest = onEditTimestampRequest,
         onExport = { viewModel.buildExportRequest()?.let(onExport) },
         onExportMessageConsumed = onExportMessageConsumed,
     )
@@ -110,6 +113,7 @@ private fun TimestampEditorScreen(
     state: TimestampEditorContract.State,
     onIntent: (TimestampEditorContract.Intent) -> Unit,
     onPickPhoto: () -> Unit,
+    onEditTimestampRequest: (String) -> Unit,
     onExport: () -> Unit,
     onExportMessageConsumed: () -> Unit,
 ) {
@@ -153,6 +157,7 @@ private fun TimestampEditorScreen(
                         state = state,
                         onIntent = onIntent,
                         onPickPhoto = onPickPhoto,
+                        onEditTimestampRequest = onEditTimestampRequest,
                         onExport = onExport,
                         palette = editorPalette,
                     )
@@ -178,6 +183,7 @@ private fun EditorHomeScreen(
     state: TimestampEditorContract.State,
     onIntent: (TimestampEditorContract.Intent) -> Unit,
     onPickPhoto: () -> Unit,
+    onEditTimestampRequest: (String) -> Unit,
     onExport: () -> Unit,
     palette: EditorPalette,
 ) {
@@ -209,6 +215,7 @@ private fun EditorHomeScreen(
         PreviewCard(
             state = state,
             onIntent = onIntent,
+            onEditTimestampRequest = onEditTimestampRequest,
             onExport = onExport,
             palette = palette,
         )
@@ -525,6 +532,7 @@ private fun BoxScope.CropResizeHandle(
 private fun PreviewCard(
     state: TimestampEditorContract.State,
     onIntent: (TimestampEditorContract.Intent) -> Unit,
+    onEditTimestampRequest: (String) -> Unit,
     onExport: () -> Unit,
     palette: EditorPalette,
 ) {
@@ -574,13 +582,13 @@ private fun PreviewCard(
                 )
             }
 
-            OutlinedTextField(
-                value = state.timestamp,
-                onValueChange = { onIntent(TimestampEditorContract.Intent.TimestampChanged(it)) },
+            Button(
+                onClick = { onEditTimestampRequest(state.timestamp) },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("타임스탬프") },
-                singleLine = true,
-            )
+                enabled = state.hasSelectedPhoto,
+            ) {
+                Text(state.timestamp)
+            }
 
             OverlayControlRow("오버레이 톤", TimestampOverlayTone.entries, state.overlayTone, { it.label }) {
                 onIntent(TimestampEditorContract.Intent.ToneChanged(it))
