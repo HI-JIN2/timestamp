@@ -39,9 +39,14 @@
 - Start from a private GitHub repository
 - Leave a commit for each work unit
 - Commit message format:
-  - `<type>: 00 작업 내용`
-  - Example: `fix: 00 타임스탬프 위치 계산 오류 수정`
+  - `<type>: 작업 내용`
+  - Example: `fix: 타임스탬프 위치 계산 오류 수정`
 - Use English for the commit type and concise Korean for the description
+
+## Build Conventions
+
+- Keep repeated Gradle setup in custom convention plugins under `build-logic`
+- Prefer module build scripts that declare only module-specific dependencies and exceptions
 
 ## Expected Early Milestones
 

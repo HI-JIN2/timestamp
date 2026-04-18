@@ -22,7 +22,7 @@ The app lets users choose a photo and apply a retro timestamp that looks like th
 
 - Start with a private GitHub repository
 - Record progress in small commits by work unit
-- Use commit messages such as `feat: 00 사진 선택 기능 추가`
+- Use commit messages such as `feat: 사진 선택 기능 추가`
 - Keep descriptions detailed enough to understand intent quickly
 
 ## Next Step
@@ -43,6 +43,7 @@ Initialize the Compose Multiplatform project baseline and then build the photo s
 - Multi-module project structure
 - MVVM + MVI presentation model
 - Platform code isolated to app shell and native host layers
+- Shared Gradle rules managed through custom convention plugins in `build-logic`
 
 ## Local Requirements
 
