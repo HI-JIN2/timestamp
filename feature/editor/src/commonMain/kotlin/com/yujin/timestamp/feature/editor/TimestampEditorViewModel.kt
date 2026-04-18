@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.yujin.timestamp.core.model.TimestampExportRequest
 import com.yujin.timestamp.domain.editor.GetEditorInitialStateUseCase
+import com.yujin.timestamp.feature.crop.defaultCropRect
 
 class TimestampEditorViewModel(
     private val getEditorInitialState: GetEditorInitialStateUseCase,

@@ -20,6 +20,8 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.exifinterface)
+            implementation(projects.core.model)
+            implementation(projects.feature.editor)
         }
         commonMain.dependencies {
             api(projects.core.model)

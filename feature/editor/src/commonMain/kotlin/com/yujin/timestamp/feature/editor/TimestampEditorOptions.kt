@@ -83,12 +83,3 @@ enum class TimestampOverlaySafeArea(
     Standard(Res.string.overlay_safe_area_standard, 10, 0.025f, "standard"),
     Strong(Res.string.overlay_safe_area_strong, 20, 0.05f, "strong"),
 }
-
-enum class TimestampAspectRatioPreset(
-    val labelRes: StringResource,
-    val ratio: Float,
-    val exportKey: String,
-) {
-    FourThree(Res.string.aspect_ratio_four_three, 4f / 3f, "4_3"),
-    SixteenNine(Res.string.aspect_ratio_sixteen_nine, 16f / 9f, "16_9"),
-}

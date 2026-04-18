@@ -1,6 +1,7 @@
 package com.yujin.timestamp.feature.editor
 
 import androidx.compose.ui.graphics.ImageBitmap
+import com.yujin.timestamp.feature.crop.TimestampAspectRatioPreset
 
 object TimestampEditorUiContract {
     data class State(

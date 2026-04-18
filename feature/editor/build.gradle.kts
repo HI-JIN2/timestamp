@@ -8,6 +8,7 @@ kotlin {
             implementation(compose.materialIconsExtended)
             implementation(projects.core.model)
             implementation(projects.domain.editor)
+            implementation(projects.feature.crop)
         }
     }
 }

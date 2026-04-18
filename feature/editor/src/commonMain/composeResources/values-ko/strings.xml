@@ -4,16 +4,11 @@
     <string name="pick_photo">사진 선택</string>
     <string name="pick_photo_again">사진 다시 선택</string>
     <string name="crop_editor">크롭 편집</string>
-    <string name="crop_editor_title">크롭 편집</string>
-    <string name="reset">초기화</string>
-    <string name="done">완료</string>
-    <string name="crop_ratio">크롭 비율</string>
     <string name="overlay_tone">오버레이 톤</string>
     <string name="reset_default">초기화</string>
     <string name="export">내보내기</string>
     <string name="preview_placeholder">선택한 사진이 여기에 표시됩니다</string>
     <string name="preview_image_description">선택한 사진 프리뷰</string>
-    <string name="crop_image_description">크롭 편집 사진</string>
     <string name="tone_classic">클래식</string>
     <string name="tone_burnt">번트</string>
     <string name="tone_film">필름</string>
@@ -28,6 +23,4 @@
     <string name="overlay_safe_area_off">없음</string>
     <string name="overlay_safe_area_standard">기본</string>
     <string name="overlay_safe_area_strong">넓게</string>
-    <string name="aspect_ratio_four_three">4:3</string>
-    <string name="aspect_ratio_sixteen_nine">16:9</string>
 </resources>

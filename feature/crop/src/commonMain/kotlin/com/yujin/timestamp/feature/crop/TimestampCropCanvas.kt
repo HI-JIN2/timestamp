@@ -1,4 +1,4 @@
-package com.yujin.timestamp.feature.editor
+package com.yujin.timestamp.feature.crop
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -27,21 +27,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import timestamp.feature.editor.generated.resources.Res
-import timestamp.feature.editor.generated.resources.crop_image_description
+import timestamp.feature.crop.generated.resources.Res
+import timestamp.feature.crop.generated.resources.crop_image_description
 import kotlin.math.roundToInt
 
-private enum class CropDragHandle {
-    Move,
-    Left,
-    Right,
-    Top,
-    Bottom,
-    TopLeft,
-    TopRight,
-    BottomLeft,
-    BottomRight,
-}
+private enum class CropDragHandle { Move, Left, Right, Top, Bottom, TopLeft, TopRight, BottomLeft, BottomRight }
 
 private data class CropRectPx(
     val left: Float,
@@ -56,14 +46,14 @@ private data class CropRectPx(
 }
 
 @Composable
-internal fun CropGestureSurface(
+internal fun TimestampCropCanvas(
     previewImage: ImageBitmap,
     aspectRatioPreset: TimestampAspectRatioPreset,
     cropLeftRatio: Float,
     cropTopRatio: Float,
     cropWidthRatio: Float,
     cropHeightRatio: Float,
-    palette: EditorPalette,
+    palette: TimestampCropPalette,
     onCropRectChanged: (Float, Float, Float, Float) -> Unit,
 ) {
     BoxWithConstraints(
@@ -105,13 +95,7 @@ internal fun CropGestureSurface(
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit,
             )
-            CropMaskOverlay(
-                cropLeftPx = cropRect.left,
-                cropTopPx = cropRect.top,
-                cropWidthPx = cropRect.width,
-                cropHeightPx = cropRect.height,
-                palette = palette,
-            )
+            CropMaskOverlay(cropRect, palette)
             CropFrame(
                 cropRect = cropRect,
                 imageWidthPx = imageWidthPx,
@@ -130,7 +114,7 @@ private fun CropFrame(
     imageWidthPx: Float,
     imageHeightPx: Float,
     cropAspectRatio: Float,
-    palette: EditorPalette,
+    palette: TimestampCropPalette,
     onCropRectChanged: (Float, Float, Float, Float) -> Unit,
 ) {
     Box(
@@ -138,192 +122,80 @@ private fun CropFrame(
             .offset { IntOffset(cropRect.left.roundToInt(), cropRect.top.roundToInt()) }
             .fillMaxWidth(fraction = cropRect.width / imageWidthPx)
             .aspectRatio(cropAspectRatio)
-            .border(1.dp, palette.cropGuide)
+            .border(1.dp, palette.guide)
             .pointerInput(cropRect, imageWidthPx, imageHeightPx, cropAspectRatio) {
                 detectDragGestures { change, dragAmount ->
                     change.consume()
-                    updateCropRect(
-                        handle = CropDragHandle.Move,
-                        current = cropRect,
-                        dragX = dragAmount.x,
-                        dragY = dragAmount.y,
-                        imageWidthPx = imageWidthPx,
-                        imageHeightPx = imageHeightPx,
-                        aspectRatio = cropAspectRatio,
-                        onCropRectChanged = onCropRectChanged,
-                    )
+                    updateCropRect(CropDragHandle.Move, cropRect, dragAmount.x, dragAmount.y, imageWidthPx, imageHeightPx, cropAspectRatio, onCropRectChanged)
                 }
             },
     ) {
         CropGridOverlay(palette)
-        CropCornerHandles(
-            palette = palette,
-            cropRect = cropRect,
-            imageWidthPx = imageWidthPx,
-            imageHeightPx = imageHeightPx,
-            aspectRatio = cropAspectRatio,
-            onCropRectChanged = onCropRectChanged,
-        )
+        CropHandles(cropRect, imageWidthPx, imageHeightPx, cropAspectRatio, palette, onCropRectChanged)
     }
 }
 
 @Composable
-private fun CropMaskOverlay(
-    cropLeftPx: Float,
-    cropTopPx: Float,
-    cropWidthPx: Float,
-    cropHeightPx: Float,
-    palette: EditorPalette,
-) {
+private fun CropMaskOverlay(cropRect: CropRectPx, palette: TimestampCropPalette) {
     Canvas(modifier = Modifier.fillMaxSize()) {
-        drawRect(color = palette.cropShade)
+        drawRect(color = palette.shade)
         clipRect(
-            left = cropLeftPx,
-            top = cropTopPx,
-            right = cropLeftPx + cropWidthPx,
-            bottom = cropTopPx + cropHeightPx,
+            left = cropRect.left,
+            top = cropRect.top,
+            right = cropRect.right,
+            bottom = cropRect.bottom,
             clipOp = ClipOp.Difference,
-        ) {
-            drawRect(color = palette.cropShade)
-        }
+        ) { drawRect(color = palette.shade) }
     }
 }
 
 @Composable
-private fun CropGridOverlay(palette: EditorPalette) {
+private fun CropGridOverlay(palette: TimestampCropPalette) {
     Canvas(modifier = Modifier.fillMaxSize()) {
         val thirdWidth = size.width / 3f
         val thirdHeight = size.height / 3f
         val stroke = size.minDimension * 0.0025f
-
         repeat(2) { index ->
             val x = thirdWidth * (index + 1)
-            drawLine(
-                color = palette.cropGrid,
-                start = Offset(x, 0f),
-                end = Offset(x, size.height),
-                strokeWidth = stroke,
-            )
+            drawLine(palette.grid, Offset(x, 0f), Offset(x, size.height), stroke)
         }
-
         repeat(2) { index ->
             val y = thirdHeight * (index + 1)
-            drawLine(
-                color = palette.cropGrid,
-                start = Offset(0f, y),
-                end = Offset(size.width, y),
-                strokeWidth = stroke,
-            )
+            drawLine(palette.grid, Offset(0f, y), Offset(size.width, y), stroke)
         }
     }
 }
 
 @Composable
-private fun BoxScope.CropCornerHandles(
-    palette: EditorPalette,
+private fun BoxScope.CropHandles(
     cropRect: CropRectPx,
     imageWidthPx: Float,
     imageHeightPx: Float,
     aspectRatio: Float,
+    palette: TimestampCropPalette,
     onCropRectChanged: (Float, Float, Float, Float) -> Unit,
 ) {
     Canvas(modifier = Modifier.fillMaxSize()) {
         val handleLength = size.minDimension * 0.055f
         val stroke = size.minDimension * 0.008f
-
         fun drawCorner(originX: Float, originY: Float, horizontalSign: Float, verticalSign: Float) {
-            drawLine(
-                color = palette.cropFrame,
-                start = Offset(originX, originY),
-                end = Offset(originX + handleLength * horizontalSign, originY),
-                strokeWidth = stroke,
-            )
-            drawLine(
-                color = palette.cropFrame,
-                start = Offset(originX, originY),
-                end = Offset(originX, originY + handleLength * verticalSign),
-                strokeWidth = stroke,
-            )
+            drawLine(palette.frame, Offset(originX, originY), Offset(originX + handleLength * horizontalSign, originY), stroke)
+            drawLine(palette.frame, Offset(originX, originY), Offset(originX, originY + handleLength * verticalSign), stroke)
         }
-
         drawCorner(0f, 0f, 1f, 1f)
         drawCorner(size.width, 0f, -1f, 1f)
         drawCorner(0f, size.height, 1f, -1f)
         drawCorner(size.width, size.height, -1f, -1f)
     }
 
-    CropEdgeHandle(
-        modifier = Modifier.align(Alignment.CenterStart),
-        handle = CropDragHandle.Left,
-        cropRect = cropRect,
-        imageWidthPx = imageWidthPx,
-        imageHeightPx = imageHeightPx,
-        aspectRatio = aspectRatio,
-        onCropRectChanged = onCropRectChanged,
-    )
-    CropEdgeHandle(
-        modifier = Modifier.align(Alignment.CenterEnd),
-        handle = CropDragHandle.Right,
-        cropRect = cropRect,
-        imageWidthPx = imageWidthPx,
-        imageHeightPx = imageHeightPx,
-        aspectRatio = aspectRatio,
-        onCropRectChanged = onCropRectChanged,
-    )
-    CropEdgeHandle(
-        modifier = Modifier.align(Alignment.TopCenter),
-        handle = CropDragHandle.Top,
-        cropRect = cropRect,
-        imageWidthPx = imageWidthPx,
-        imageHeightPx = imageHeightPx,
-        aspectRatio = aspectRatio,
-        onCropRectChanged = onCropRectChanged,
-    )
-    CropEdgeHandle(
-        modifier = Modifier.align(Alignment.BottomCenter),
-        handle = CropDragHandle.Bottom,
-        cropRect = cropRect,
-        imageWidthPx = imageWidthPx,
-        imageHeightPx = imageHeightPx,
-        aspectRatio = aspectRatio,
-        onCropRectChanged = onCropRectChanged,
-    )
-    CropResizeHandle(
-        modifier = Modifier.align(Alignment.TopStart),
-        handle = CropDragHandle.TopLeft,
-        cropRect = cropRect,
-        imageWidthPx = imageWidthPx,
-        imageHeightPx = imageHeightPx,
-        aspectRatio = aspectRatio,
-        onCropRectChanged = onCropRectChanged,
-    )
-    CropResizeHandle(
-        modifier = Modifier.align(Alignment.TopEnd),
-        handle = CropDragHandle.TopRight,
-        cropRect = cropRect,
-        imageWidthPx = imageWidthPx,
-        imageHeightPx = imageHeightPx,
-        aspectRatio = aspectRatio,
-        onCropRectChanged = onCropRectChanged,
-    )
-    CropResizeHandle(
-        modifier = Modifier.align(Alignment.BottomStart),
-        handle = CropDragHandle.BottomLeft,
-        cropRect = cropRect,
-        imageWidthPx = imageWidthPx,
-        imageHeightPx = imageHeightPx,
-        aspectRatio = aspectRatio,
-        onCropRectChanged = onCropRectChanged,
-    )
-    CropResizeHandle(
-        modifier = Modifier.align(Alignment.BottomEnd),
-        handle = CropDragHandle.BottomRight,
-        cropRect = cropRect,
-        imageWidthPx = imageWidthPx,
-        imageHeightPx = imageHeightPx,
-        aspectRatio = aspectRatio,
-        onCropRectChanged = onCropRectChanged,
-    )
+    CropEdgeHandle(Modifier.align(Alignment.CenterStart), CropDragHandle.Left, cropRect, imageWidthPx, imageHeightPx, aspectRatio, onCropRectChanged)
+    CropEdgeHandle(Modifier.align(Alignment.CenterEnd), CropDragHandle.Right, cropRect, imageWidthPx, imageHeightPx, aspectRatio, onCropRectChanged)
+    CropEdgeHandle(Modifier.align(Alignment.TopCenter), CropDragHandle.Top, cropRect, imageWidthPx, imageHeightPx, aspectRatio, onCropRectChanged)
+    CropEdgeHandle(Modifier.align(Alignment.BottomCenter), CropDragHandle.Bottom, cropRect, imageWidthPx, imageHeightPx, aspectRatio, onCropRectChanged)
+    CropResizeHandle(Modifier.align(Alignment.TopStart), CropDragHandle.TopLeft, cropRect, imageWidthPx, imageHeightPx, aspectRatio, onCropRectChanged)
+    CropResizeHandle(Modifier.align(Alignment.TopEnd), CropDragHandle.TopRight, cropRect, imageWidthPx, imageHeightPx, aspectRatio, onCropRectChanged)
+    CropResizeHandle(Modifier.align(Alignment.BottomStart), CropDragHandle.BottomLeft, cropRect, imageWidthPx, imageHeightPx, aspectRatio, onCropRectChanged)
+    CropResizeHandle(Modifier.align(Alignment.BottomEnd), CropDragHandle.BottomRight, cropRect, imageWidthPx, imageHeightPx, aspectRatio, onCropRectChanged)
 }
 
 @Composable
@@ -349,16 +221,7 @@ private fun BoxScope.CropEdgeHandle(
             .pointerInput(cropRect, imageWidthPx, imageHeightPx, aspectRatio) {
                 detectDragGestures { change, dragAmount ->
                     change.consume()
-                    updateCropRect(
-                        handle = handle,
-                        current = cropRect,
-                        dragX = dragAmount.x,
-                        dragY = dragAmount.y,
-                        imageWidthPx = imageWidthPx,
-                        imageHeightPx = imageHeightPx,
-                        aspectRatio = aspectRatio,
-                        onCropRectChanged = onCropRectChanged,
-                    )
+                    updateCropRect(handle, cropRect, dragAmount.x, dragAmount.y, imageWidthPx, imageHeightPx, aspectRatio, onCropRectChanged)
                 }
             },
     )
@@ -380,16 +243,7 @@ private fun BoxScope.CropResizeHandle(
             .pointerInput(cropRect, imageWidthPx, imageHeightPx, aspectRatio) {
                 detectDragGestures { change, dragAmount ->
                     change.consume()
-                    updateCropRect(
-                        handle = handle,
-                        current = cropRect,
-                        dragX = dragAmount.x,
-                        dragY = dragAmount.y,
-                        imageWidthPx = imageWidthPx,
-                        imageHeightPx = imageHeightPx,
-                        aspectRatio = aspectRatio,
-                        onCropRectChanged = onCropRectChanged,
-                    )
+                    updateCropRect(handle, cropRect, dragAmount.x, dragAmount.y, imageWidthPx, imageHeightPx, aspectRatio, onCropRectChanged)
                 }
             },
     )
@@ -416,34 +270,16 @@ private fun updateCropRect(
         CropDragHandle.BottomLeft -> resizeFromCorner(current, dragX, dragY, imageWidthPx, imageHeightPx, aspectRatio, true, false)
         CropDragHandle.BottomRight -> resizeFromCorner(current, dragX, dragY, imageWidthPx, imageHeightPx, aspectRatio, false, false)
     }
-
-    onCropRectChanged(
-        updated.left / imageWidthPx,
-        updated.top / imageHeightPx,
-        updated.width / imageWidthPx,
-        updated.height / imageHeightPx,
-    )
+    onCropRectChanged(updated.left / imageWidthPx, updated.top / imageHeightPx, updated.width / imageWidthPx, updated.height / imageHeightPx)
 }
 
-private fun moveCropRect(
-    current: CropRectPx,
-    dragX: Float,
-    dragY: Float,
-    imageWidthPx: Float,
-    imageHeightPx: Float,
-): CropRectPx {
+private fun moveCropRect(current: CropRectPx, dragX: Float, dragY: Float, imageWidthPx: Float, imageHeightPx: Float): CropRectPx {
     val left = (current.left + dragX).coerceIn(0f, imageWidthPx - current.width)
     val top = (current.top + dragY).coerceIn(0f, imageHeightPx - current.height)
     return current.copy(left = left, top = top)
 }
 
-private fun resizeFromLeft(
-    current: CropRectPx,
-    dragX: Float,
-    imageWidthPx: Float,
-    imageHeightPx: Float,
-    aspectRatio: Float,
-): CropRectPx {
+private fun resizeFromLeft(current: CropRectPx, dragX: Float, imageWidthPx: Float, imageHeightPx: Float, aspectRatio: Float): CropRectPx {
     val right = current.right
     val requestedWidth = (right - (current.left + dragX)).coerceAtLeast(1f)
     val maxWidthByBounds = minOf(right, imageHeightPx * aspectRatio)
@@ -451,32 +287,20 @@ private fun resizeFromLeft(
     val height = width / aspectRatio
     val left = right - width
     val top = (current.centerY - height / 2f).coerceIn(0f, imageHeightPx - height)
-    return CropRectPx(left = left, top = top, width = width, height = height)
+    return CropRectPx(left, top, width, height)
 }
 
-private fun resizeFromRight(
-    current: CropRectPx,
-    dragX: Float,
-    imageWidthPx: Float,
-    imageHeightPx: Float,
-    aspectRatio: Float,
-): CropRectPx {
+private fun resizeFromRight(current: CropRectPx, dragX: Float, imageWidthPx: Float, imageHeightPx: Float, aspectRatio: Float): CropRectPx {
     val left = current.left
     val requestedWidth = (current.width + dragX).coerceAtLeast(1f)
     val maxWidthByBounds = minOf(imageWidthPx - left, imageHeightPx * aspectRatio)
     val width = requestedWidth.coerceIn(imageWidthPx * 0.12f, maxWidthByBounds)
     val height = width / aspectRatio
     val top = (current.centerY - height / 2f).coerceIn(0f, imageHeightPx - height)
-    return CropRectPx(left = left, top = top, width = width, height = height)
+    return CropRectPx(left, top, width, height)
 }
 
-private fun resizeFromTop(
-    current: CropRectPx,
-    dragY: Float,
-    imageWidthPx: Float,
-    imageHeightPx: Float,
-    aspectRatio: Float,
-): CropRectPx {
+private fun resizeFromTop(current: CropRectPx, dragY: Float, imageWidthPx: Float, imageHeightPx: Float, aspectRatio: Float): CropRectPx {
     val bottom = current.bottom
     val requestedHeight = (bottom - (current.top + dragY)).coerceAtLeast(1f)
     val maxHeightByBounds = minOf(bottom, imageWidthPx / aspectRatio)
@@ -484,23 +308,17 @@ private fun resizeFromTop(
     val width = height * aspectRatio
     val left = (current.centerX - width / 2f).coerceIn(0f, imageWidthPx - width)
     val top = bottom - height
-    return CropRectPx(left = left, top = top, width = width, height = height)
+    return CropRectPx(left, top, width, height)
 }
 
-private fun resizeFromBottom(
-    current: CropRectPx,
-    dragY: Float,
-    imageWidthPx: Float,
-    imageHeightPx: Float,
-    aspectRatio: Float,
-): CropRectPx {
+private fun resizeFromBottom(current: CropRectPx, dragY: Float, imageWidthPx: Float, imageHeightPx: Float, aspectRatio: Float): CropRectPx {
     val top = current.top
     val requestedHeight = (current.height + dragY).coerceAtLeast(1f)
     val maxHeightByBounds = minOf(imageHeightPx - top, imageWidthPx / aspectRatio)
     val height = requestedHeight.coerceIn(imageHeightPx * 0.12f, maxHeightByBounds)
     val width = height * aspectRatio
     val left = (current.centerX - width / 2f).coerceIn(0f, imageWidthPx - width)
-    return CropRectPx(left = left, top = top, width = width, height = height)
+    return CropRectPx(left, top, width, height)
 }
 
 private fun resizeFromCorner(
@@ -527,5 +345,5 @@ private fun resizeFromCorner(
     val height = width / aspectRatio
     val left = if (anchoredRight) current.right - width else current.left
     val top = if (anchoredBottom) current.bottom - height else current.top
-    return CropRectPx(left = left, top = top, width = width, height = height)
+    return CropRectPx(left, top, width, height)
 }

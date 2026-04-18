@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="crop_editor_title">Crop</string>
+    <string name="crop_image_description">Photo for crop editing</string>
+    <string name="crop_ratio">Crop Ratio</string>
+    <string name="reset">Reset</string>
+    <string name="done">Done</string>
+    <string name="aspect_ratio_four_three">4:3</string>
+    <string name="aspect_ratio_sixteen_nine">16:9</string>
+</resources>

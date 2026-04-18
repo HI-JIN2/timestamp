@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.yujin.timestamp.feature.crop.TimestampCropRoute
 
 @Composable
 internal fun TimestampEditorScreen(
@@ -57,10 +58,28 @@ internal fun TimestampEditorScreen(
                 color = MaterialTheme.colorScheme.background,
             ) {
                 if (state.isCropEditorVisible && state.previewImage != null) {
-                    CropEditorSection(
-                        state = state,
-                        onIntent = onIntent,
-                        palette = editorPalette,
+                    TimestampCropRoute(
+                        previewImage = state.previewImage,
+                        aspectRatioPreset = state.aspectRatioPreset,
+                        cropLeftRatio = state.cropLeftRatio,
+                        cropTopRatio = state.cropTopRatio,
+                        cropWidthRatio = state.cropWidthRatio,
+                        cropHeightRatio = state.cropHeightRatio,
+                        onAspectRatioChanged = {
+                            onIntent(TimestampEditorUiContract.Intent.AspectRatioChanged(it))
+                        },
+                        onCropRectChanged = { leftRatio, topRatio, widthRatio, heightRatio ->
+                            onIntent(
+                                TimestampEditorUiContract.Intent.CropRectChanged(
+                                    leftRatio = leftRatio,
+                                    topRatio = topRatio,
+                                    widthRatio = widthRatio,
+                                    heightRatio = heightRatio,
+                                ),
+                            )
+                        },
+                        onResetCrop = { onIntent(TimestampEditorUiContract.Intent.ResetCrop) },
+                        onClose = { onIntent(TimestampEditorUiContract.Intent.CloseCropEditor) },
                     )
                 } else {
                     EditorHomeSection(

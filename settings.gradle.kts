@@ -33,4 +33,5 @@ dependencyResolutionManagement {
 include(":composeApp")
 include(":core:model")
 include(":domain:editor")
+include(":feature:crop")
 include(":feature:editor")
