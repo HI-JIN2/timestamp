@@ -69,7 +69,6 @@ class TimestampEditorViewModel(
     ): TimestampEditorContract.State {
         val hasSelectedPhoto = intent.previewImage != null || intent.selectedImageBase64 != null
         val preview = getTimestampPreviewState(
-            hasSelectedPhoto = hasSelectedPhoto,
             metadataTimestampLabel = intent.metadataTimestampLabel,
         )
         val shouldResetTimestamp = state.selectedImageBase64 != intent.selectedImageBase64 ||
@@ -81,9 +80,7 @@ class TimestampEditorViewModel(
             hasSelectedPhoto = hasSelectedPhoto,
             defaultTimestamp = preview.timestampLabel,
             timestamp = if (shouldResetTimestamp) preview.timestampLabel else state.timestamp,
-            metadataDescription = preview.metadataDescription,
             location = preview.locationLabel,
-            helperText = preview.helperText,
             exportMessage = intent.exportMessage,
         )
     }

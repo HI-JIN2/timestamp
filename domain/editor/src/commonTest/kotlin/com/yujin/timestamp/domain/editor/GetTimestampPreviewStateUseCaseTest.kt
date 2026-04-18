@@ -10,18 +10,16 @@ class GetTimestampPreviewStateUseCaseTest {
     @Test
     fun returnsMetadataTimestampWhenAvailable() {
         val preview = useCase(
-            hasSelectedPhoto = true,
             metadataTimestampLabel = "03.04.26  19:10",
         )
 
         assertEquals("03.04.26  19:10", preview.timestampLabel)
-        assertTrue(preview.metadataDescription.contains("메타데이터"))
+        assertEquals("SEOUL, KR", preview.locationLabel)
     }
 
     @Test
     fun returnsSampleTimestampWhenMetadataMissing() {
         val preview = useCase(
-            hasSelectedPhoto = false,
             metadataTimestampLabel = null,
         )
 

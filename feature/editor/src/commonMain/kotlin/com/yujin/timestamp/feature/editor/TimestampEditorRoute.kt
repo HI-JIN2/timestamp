@@ -181,11 +181,6 @@ private fun EditorHomeScreen(
                 letterSpacing = (-0.5).sp,
             ),
         )
-        Text(
-            text = "사진 선택 후 별도 크롭 화면에서 4:3 또는 16:9 비율을 고르고 손가락으로 직접 구도를 조정합니다.",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(onClick = onPickPhoto) {
                 Text(if (state.hasSelectedPhoto) "사진 다시 선택" else "사진 선택")
@@ -235,12 +230,6 @@ private fun CropEditorScreen(
                 }
             }
         }
-
-        Text(
-            text = "화면에서 두 손가락으로 확대/축소하고 드래그로 구도를 맞춥니다.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
 
         OverlayControlRow(
             label = "크롭 비율",
@@ -333,12 +322,6 @@ private fun PreviewCard(
                 .padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text("프리뷰", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Text(
-                text = if (state.hasSelectedPhoto) "사진 선택 완료" else "사진 미선택",
-                style = MaterialTheme.typography.labelLarge,
-                color = if (state.hasSelectedPhoto) Color(0xFF2F6A3D) else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -379,14 +362,11 @@ private fun PreviewCard(
                 )
             }
 
-            Text(state.helperText, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
-
             OutlinedTextField(
                 value = state.timestamp,
                 onValueChange = { onIntent(TimestampEditorContract.Intent.TimestampChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("타임스탬프") },
-                supportingText = { Text(state.metadataDescription) },
                 singleLine = true,
             )
 
