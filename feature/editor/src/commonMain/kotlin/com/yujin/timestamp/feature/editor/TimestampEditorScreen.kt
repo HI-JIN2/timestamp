@@ -16,8 +16,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.yujin.timestamp.feature.crop.TimestampCropRoute
-import com.yujin.timestamp.feature.crop.TimestampCropUiContract
+import com.yujin.timestamp.feature.crop.CropRoute
+import com.yujin.timestamp.feature.crop.CropUiContract
 
 @Composable
 internal fun TimestampEditorScreen(
@@ -55,8 +55,8 @@ internal fun TimestampEditorScreen(
                 color = MaterialTheme.colorScheme.background,
             ) {
                 if (state.isCropEditorVisible && state.previewImage != null) {
-                    TimestampCropRoute(
-                        state = TimestampCropUiContract.State(
+                    CropRoute(
+                        state = CropUiContract.State(
                             previewImage = state.previewImage,
                             aspectRatio = state.aspectRatioPreset,
                             cropLeftRatio = state.cropLeftRatio,
@@ -66,10 +66,10 @@ internal fun TimestampEditorScreen(
                         ),
                         actions = { cropAction ->
                             when (cropAction) {
-                                is TimestampCropUiContract.Action.AspectRatioChanged -> {
+                                is CropUiContract.Action.AspectRatioChanged -> {
                                     actions(TimestampEditorUiContract.Action.AspectRatioChanged(cropAction.value))
                                 }
-                                is TimestampCropUiContract.Action.CropRectChanged -> {
+                                is CropUiContract.Action.CropRectChanged -> {
                                     actions(
                                         TimestampEditorUiContract.Action.CropRectChanged(
                                             leftRatio = cropAction.leftRatio,
@@ -79,10 +79,10 @@ internal fun TimestampEditorScreen(
                                         ),
                                     )
                                 }
-                                TimestampCropUiContract.Action.Reset -> {
+                                CropUiContract.Action.Reset -> {
                                     actions(TimestampEditorUiContract.Action.ResetCrop)
                                 }
-                                TimestampCropUiContract.Action.Done -> {
+                                CropUiContract.Action.Done -> {
                                     actions(TimestampEditorUiContract.Action.CloseCropEditor)
                                 }
                             }

@@ -29,15 +29,15 @@ import timestamp.feature.crop.generated.resources.done
 import timestamp.feature.crop.generated.resources.reset
 
 @Composable
-fun TimestampCropRoute(
-    state: TimestampCropUiContract.State,
-    actions: (TimestampCropUiContract.Action) -> Unit,
+fun CropRoute(
+    state: CropUiContract.State,
+    actions: (CropUiContract.Action) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val palette = rememberTimestampCropPalette(isSystemInDarkTheme())
+    val palette = rememberCropPalette(isSystemInDarkTheme())
 
     MaterialTheme(colorScheme = timestampCropColorScheme(isSystemInDarkTheme())) {
-        TimestampCropScreen(
+        CropScreen(
             state = state,
             actions = actions,
             modifier = modifier,
@@ -47,11 +47,11 @@ fun TimestampCropRoute(
 }
 
 @Composable
-internal fun TimestampCropScreen(
-    state: TimestampCropUiContract.State,
-    actions: (TimestampCropUiContract.Action) -> Unit,
+internal fun CropScreen(
+    state: CropUiContract.State,
+    actions: (CropUiContract.Action) -> Unit,
     modifier: Modifier = Modifier,
-    palette: TimestampCropPalette,
+    palette: CropPalette,
 ) {
     Column(
         modifier = modifier
@@ -71,12 +71,12 @@ internal fun TimestampCropScreen(
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
-                    onClick = { actions(TimestampCropUiContract.Action.Reset) },
+                    onClick = { actions(CropUiContract.Action.Reset) },
                     shape = RectangleShape,
                     colors = cropActionButtonColors(),
                 ) { Text(stringResource(Res.string.reset)) }
                 Button(
-                    onClick = { actions(TimestampCropUiContract.Action.Done) },
+                    onClick = { actions(CropUiContract.Action.Done) },
                     shape = RectangleShape,
                     colors = cropActionButtonColors(),
                 ) { Text(stringResource(Res.string.done)) }
@@ -93,7 +93,7 @@ internal fun TimestampCropScreen(
                     TimestampAspectRatio.SixteenNine -> Res.string.aspect_ratio_sixteen_nine
                 }
             },
-            onSelected = { actions(TimestampCropUiContract.Action.AspectRatioChanged(it)) },
+            onSelected = { actions(CropUiContract.Action.AspectRatioChanged(it)) },
         )
 
         Box(
@@ -103,7 +103,7 @@ internal fun TimestampCropScreen(
                 .background(palette.background),
             contentAlignment = Alignment.Center,
         ) {
-            TimestampCropCanvas(
+            CropCanvas(
                 previewImage = state.previewImage,
                 aspectRatioPreset = state.aspectRatio,
                 cropLeftRatio = state.cropLeftRatio,
@@ -113,7 +113,7 @@ internal fun TimestampCropScreen(
                 palette = palette,
                 onCropRectChanged = { leftRatio, topRatio, widthRatio, heightRatio ->
                     actions(
-                        TimestampCropUiContract.Action.CropRectChanged(
+                        CropUiContract.Action.CropRectChanged(
                             leftRatio = leftRatio,
                             topRatio = topRatio,
                             widthRatio = widthRatio,

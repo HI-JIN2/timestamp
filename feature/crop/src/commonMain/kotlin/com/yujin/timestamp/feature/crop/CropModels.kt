@@ -3,7 +3,7 @@ package com.yujin.timestamp.feature.crop
 import androidx.compose.ui.graphics.ImageBitmap
 import com.yujin.timestamp.core.model.TimestampAspectRatio
 
-data class TimestampCropRect(
+data class CropRect(
     val leftRatio: Float,
     val topRatio: Float,
     val widthRatio: Float,
@@ -13,9 +13,9 @@ data class TimestampCropRect(
 fun defaultCropRect(
     previewImage: ImageBitmap?,
     aspectRatio: TimestampAspectRatio,
-): TimestampCropRect {
+): CropRect {
     if (previewImage == null) {
-        return TimestampCropRect(0f, 0f, 1f, 1f)
+        return CropRect(0f, 0f, 1f, 1f)
     }
 
     val imageWidth = previewImage.width.toFloat().coerceAtLeast(1f)
@@ -35,7 +35,7 @@ fun defaultCropRect(
     val left = (imageWidth - cropWidth) / 2f
     val top = (imageHeight - cropHeight) / 2f
 
-    return TimestampCropRect(
+    return CropRect(
         leftRatio = left / imageWidth,
         topRatio = top / imageHeight,
         widthRatio = cropWidth / imageWidth,

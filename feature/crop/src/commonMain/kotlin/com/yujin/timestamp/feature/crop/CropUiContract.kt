@@ -3,7 +3,7 @@ package com.yujin.timestamp.feature.crop
 import androidx.compose.ui.graphics.ImageBitmap
 import com.yujin.timestamp.core.model.TimestampAspectRatio
 
-object TimestampCropUiContract {
+object CropUiContract {
     data class State(
         val previewImage: ImageBitmap,
         val aspectRatio: TimestampAspectRatio,

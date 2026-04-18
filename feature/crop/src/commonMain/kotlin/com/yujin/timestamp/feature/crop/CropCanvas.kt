@@ -47,14 +47,14 @@ private data class CropRectPx(
 }
 
 @Composable
-internal fun TimestampCropCanvas(
+internal fun CropCanvas(
     previewImage: ImageBitmap,
     aspectRatioPreset: TimestampAspectRatio,
     cropLeftRatio: Float,
     cropTopRatio: Float,
     cropWidthRatio: Float,
     cropHeightRatio: Float,
-    palette: TimestampCropPalette,
+    palette: CropPalette,
     onCropRectChanged: (Float, Float, Float, Float) -> Unit,
 ) {
     BoxWithConstraints(
@@ -115,7 +115,7 @@ private fun CropFrame(
     imageWidthPx: Float,
     imageHeightPx: Float,
     cropAspectRatio: Float,
-    palette: TimestampCropPalette,
+    palette: CropPalette,
     onCropRectChanged: (Float, Float, Float, Float) -> Unit,
 ) {
     Box(
@@ -137,7 +137,7 @@ private fun CropFrame(
 }
 
 @Composable
-private fun CropMaskOverlay(cropRect: CropRectPx, palette: TimestampCropPalette) {
+private fun CropMaskOverlay(cropRect: CropRectPx, palette: CropPalette) {
     Canvas(modifier = Modifier.fillMaxSize()) {
         drawRect(color = palette.shade)
         clipRect(
@@ -151,7 +151,7 @@ private fun CropMaskOverlay(cropRect: CropRectPx, palette: TimestampCropPalette)
 }
 
 @Composable
-private fun CropGridOverlay(palette: TimestampCropPalette) {
+private fun CropGridOverlay(palette: CropPalette) {
     Canvas(modifier = Modifier.fillMaxSize()) {
         val thirdWidth = size.width / 3f
         val thirdHeight = size.height / 3f
@@ -173,7 +173,7 @@ private fun BoxScope.CropHandles(
     imageWidthPx: Float,
     imageHeightPx: Float,
     aspectRatio: Float,
-    palette: TimestampCropPalette,
+    palette: CropPalette,
     onCropRectChanged: (Float, Float, Float, Float) -> Unit,
 ) {
     Canvas(modifier = Modifier.fillMaxSize()) {

@@ -16,7 +16,7 @@ internal fun cropActionButtonColors() = ButtonDefaults.buttonColors(
     disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
 )
 
-internal data class TimestampCropPalette(
+internal data class CropPalette(
     val background: Color,
     val guide: Color,
     val frame: Color,
@@ -25,10 +25,10 @@ internal data class TimestampCropPalette(
 )
 
 @Composable
-internal fun rememberTimestampCropPalette(isDarkTheme: Boolean): TimestampCropPalette {
+internal fun rememberCropPalette(isDarkTheme: Boolean): CropPalette {
     return remember(isDarkTheme) {
         if (isDarkTheme) {
-            TimestampCropPalette(
+            CropPalette(
                 background = Color(0xFF050505),
                 guide = Color.White.copy(alpha = 0.22f),
                 frame = Color.White.copy(alpha = 0.9f),
@@ -36,7 +36,7 @@ internal fun rememberTimestampCropPalette(isDarkTheme: Boolean): TimestampCropPa
                 shade = Color.Black.copy(alpha = 0.42f),
             )
         } else {
-            TimestampCropPalette(
+            CropPalette(
                 background = Color(0xFFF2F2F2),
                 guide = Color.Black.copy(alpha = 0.18f),
                 frame = Color.Black.copy(alpha = 0.92f),
