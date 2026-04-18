@@ -1,5 +1,6 @@
 package com.yujin.timestamp.feature.editor
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -288,8 +289,14 @@ private fun CropGestureSurface(
 ) {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(aspectRatioPreset.ratio)
+            .fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp)
+                .aspectRatio(aspectRatioPreset.ratio)
                 .border(1.dp, palette.cropGuide)
                 .pointerInput(aspectRatioPreset, cropScale, cropOffsetXRatio, cropOffsetYRatio) {
                     detectTransformGestures { _, pan, zoom, _ ->
@@ -298,22 +305,78 @@ private fun CropGestureSurface(
                         onGesture(
                             zoom,
                             pan.x / (width * 0.5f),
-                        pan.y / (height * 0.5f),
-                    )
-                }
-            },
-    ) {
-        GestureDrivenImage(
-            previewImage = previewImage,
-            cropScale = cropScale,
-            cropOffsetXRatio = cropOffsetXRatio,
-            cropOffsetYRatio = cropOffsetYRatio,
-        )
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .border(2.dp, palette.cropFrame),
-        )
+                            pan.y / (height * 0.5f),
+                        )
+                    }
+                },
+        ) {
+            GestureDrivenImage(
+                previewImage = previewImage,
+                cropScale = cropScale,
+                cropOffsetXRatio = cropOffsetXRatio,
+                cropOffsetYRatio = cropOffsetYRatio,
+            )
+            CropGridOverlay(palette)
+            CropCornerOverlay(palette)
+        }
+    }
+}
+
+@Composable
+private fun CropGridOverlay(palette: EditorPalette) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val thirdWidth = size.width / 3f
+        val thirdHeight = size.height / 3f
+        val stroke = size.minDimension * 0.0025f
+
+        repeat(2) { index ->
+            val x = thirdWidth * (index + 1)
+            drawLine(
+                color = palette.cropGrid,
+                start = Offset(x, 0f),
+                end = Offset(x, size.height),
+                strokeWidth = stroke,
+            )
+        }
+
+        repeat(2) { index ->
+            val y = thirdHeight * (index + 1)
+            drawLine(
+                color = palette.cropGrid,
+                start = Offset(0f, y),
+                end = Offset(size.width, y),
+                strokeWidth = stroke,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CropCornerOverlay(palette: EditorPalette) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val handleLength = size.minDimension * 0.055f
+        val inset = size.minDimension * 0.004f
+        val stroke = size.minDimension * 0.008f
+
+        fun drawCorner(originX: Float, originY: Float, horizontalSign: Float, verticalSign: Float) {
+            drawLine(
+                color = palette.cropFrame,
+                start = Offset(originX, originY),
+                end = Offset(originX + handleLength * horizontalSign, originY),
+                strokeWidth = stroke,
+            )
+            drawLine(
+                color = palette.cropFrame,
+                start = Offset(originX, originY),
+                end = Offset(originX, originY + handleLength * verticalSign),
+                strokeWidth = stroke,
+            )
+        }
+
+        drawCorner(inset, inset, 1f, 1f)
+        drawCorner(size.width - inset, inset, -1f, 1f)
+        drawCorner(inset, size.height - inset, 1f, -1f)
+        drawCorner(size.width - inset, size.height - inset, -1f, -1f)
     }
 }
 
@@ -501,6 +564,7 @@ private data class EditorPalette(
     val cropBackground: Color,
     val cropGuide: Color,
     val cropFrame: Color,
+    val cropGrid: Color,
     val previewGradient: List<Color>,
     val previewBorder: Color,
     val placeholderText: Color,
@@ -515,6 +579,7 @@ private fun rememberEditorPalette(isDarkTheme: Boolean): EditorPalette {
                 cropBackground = Color(0xFF050505),
                 cropGuide = Color.White.copy(alpha = 0.22f),
                 cropFrame = Color.White.copy(alpha = 0.9f),
+                cropGrid = Color.White.copy(alpha = 0.45f),
                 previewGradient = listOf(Color(0xFF2A2A2A), Color(0xFF171717), Color(0xFF080808)),
                 previewBorder = Color.White.copy(alpha = 0.12f),
                 placeholderText = Color(0xFFD8D8D8),
@@ -525,6 +590,7 @@ private fun rememberEditorPalette(isDarkTheme: Boolean): EditorPalette {
                 cropBackground = Color(0xFFF2F2F2),
                 cropGuide = Color.Black.copy(alpha = 0.18f),
                 cropFrame = Color.Black.copy(alpha = 0.92f),
+                cropGrid = Color.Black.copy(alpha = 0.26f),
                 previewGradient = listOf(Color(0xFFF6F6F6), Color(0xFFD9D9D9), Color(0xFFB8B8B8)),
                 previewBorder = Color.Black.copy(alpha = 0.12f),
                 placeholderText = Color(0xFF4A4A4A),
