@@ -9,7 +9,7 @@
     <string name="done">Done</string>
     <string name="crop_ratio">Crop Ratio</string>
     <string name="overlay_tone">Overlay Tone</string>
-    <string name="reset_default">Reset Default</string>
+    <string name="reset_default">Reset</string>
     <string name="export">Export</string>
     <string name="preview_placeholder">Selected photo will appear here.</string>
     <string name="preview_image_description">Selected photo preview</string>
