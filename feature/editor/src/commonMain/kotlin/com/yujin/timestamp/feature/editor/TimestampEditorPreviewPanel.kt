@@ -1,0 +1,230 @@
+package com.yujin.timestamp.feature.editor
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+@Composable
+internal fun PreviewPanel(
+    state: TimestampEditorUiContract.State,
+    onIntent: (TimestampEditorUiContract.Intent) -> Unit,
+    onEditTimestampRequest: (String) -> Unit,
+    onExport: () -> Unit,
+    palette: EditorPalette,
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RectangleShape,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            PreviewCanvas(
+                state = state,
+                palette = palette,
+            )
+
+            Button(
+                onClick = { onEditTimestampRequest(state.timestamp) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = state.hasSelectedPhoto,
+                shape = RectangleShape,
+                colors = retroActionButtonColors(),
+            ) {
+                Text(state.timestamp)
+            }
+
+            OverlayControlRow(
+                label = "오버레이 톤",
+                options = TimestampOverlayTone.entries,
+                selected = state.overlayTone,
+                optionLabel = { it.label },
+                onSelected = { onIntent(TimestampEditorUiContract.Intent.ToneChanged(it)) },
+            )
+
+            HorizontalDivider(color = palette.divider)
+            PrimaryActionRow(
+                hasSelectedPhoto = state.hasSelectedPhoto,
+                isExportEnabled = state.isExportEnabled,
+                onResetTimestamp = { onIntent(TimestampEditorUiContract.Intent.ResetTimestamp) },
+                onExport = onExport,
+            )
+        }
+    }
+}
+
+@Composable
+private fun PreviewCanvas(
+    state: TimestampEditorUiContract.State,
+    palette: EditorPalette,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(state.aspectRatioPreset.ratio)
+            .background(Brush.verticalGradient(colors = palette.previewGradient))
+            .border(1.dp, palette.previewBorder),
+    ) {
+        if (state.previewImage != null) {
+            GestureDrivenImage(
+                previewImage = state.previewImage,
+                cropScale = state.cropScale,
+                cropOffsetXRatio = state.cropOffsetXRatio,
+                cropOffsetYRatio = state.cropOffsetYRatio,
+            )
+        } else if (!state.hasSelectedPhoto) {
+            Text(
+                text = "선택한 사진이 여기에 표시됩니다",
+                modifier = Modifier.align(Alignment.Center),
+                color = palette.placeholderText,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
+
+        TimestampOverlay(
+            timestamp = state.timestamp,
+            location = state.location,
+            tone = state.overlayTone,
+            alignment = state.overlayAlignment,
+            scale = state.overlayScale,
+            inset = state.overlayInset,
+            safeArea = state.overlaySafeArea,
+            offsetXStep = state.overlayOffsetXStep,
+            offsetYStep = state.overlayOffsetYStep,
+        )
+    }
+}
+
+@Composable
+private fun PrimaryActionRow(
+    hasSelectedPhoto: Boolean,
+    isExportEnabled: Boolean,
+    onResetTimestamp: () -> Unit,
+    onExport: () -> Unit,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Button(
+            onClick = onResetTimestamp,
+            enabled = hasSelectedPhoto,
+            shape = RectangleShape,
+            colors = retroActionButtonColors(),
+        ) {
+            Text("기본값 복원")
+        }
+        Button(
+            onClick = onExport,
+            enabled = isExportEnabled,
+            shape = RectangleShape,
+            colors = retroActionButtonColors(),
+        ) {
+            Text("내보내기")
+        }
+    }
+}
+
+@Composable
+private fun GestureDrivenImage(
+    previewImage: ImageBitmap,
+    cropScale: Float,
+    cropOffsetXRatio: Float,
+    cropOffsetYRatio: Float,
+) {
+    Image(
+        bitmap = previewImage,
+        contentDescription = "선택한 사진 프리뷰",
+        modifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer(
+                scaleX = cropScale,
+                scaleY = cropScale,
+                translationX = cropOffsetXRatio * 180f,
+                translationY = cropOffsetYRatio * 180f,
+                transformOrigin = TransformOrigin.Center,
+            ),
+        contentScale = ContentScale.Crop,
+    )
+}
+
+@Composable
+private fun BoxScope.TimestampOverlay(
+    timestamp: String,
+    location: String,
+    tone: TimestampOverlayTone,
+    alignment: TimestampOverlayAlignment,
+    scale: TimestampOverlayScale,
+    inset: TimestampOverlayInset,
+    safeArea: TimestampOverlaySafeArea,
+    offsetXStep: Int,
+    offsetYStep: Int,
+) {
+    Column(
+        modifier = Modifier
+            .align(alignment.containerAlignment)
+            .padding(inset.previewPaddingDp.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalAlignment = if (alignment == TimestampOverlayAlignment.BottomEnd) Alignment.End else Alignment.Start,
+    ) {
+        Column(
+            modifier = Modifier.offset(
+                x = (offsetXStep * 10).dp,
+                y = ((offsetYStep * -8) - safeArea.extraPreviewBottomDp).dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalAlignment = if (alignment == TimestampOverlayAlignment.BottomEnd) Alignment.End else Alignment.Start,
+        ) {
+            Text(
+                text = timestamp,
+                color = tone.timestampColor,
+                fontSize = scale.timestampFontSp.sp,
+                fontWeight = FontWeight.Black,
+                fontFamily = FontFamily.Monospace,
+                letterSpacing = 1.4.sp,
+                textAlign = if (alignment == TimestampOverlayAlignment.BottomEnd) TextAlign.End else TextAlign.Start,
+                style = overlayTextStyle(tone.shadowColor, 8f, 3f),
+            )
+            Text(
+                text = location,
+                color = tone.locationColor,
+                style = MaterialTheme.typography.labelLarge
+                    .copy(fontSize = scale.locationFontSp.sp)
+                    .merge(overlayTextStyle(tone.shadowColor, 6f, 2f)),
+                fontFamily = FontFamily.Monospace,
+            )
+        }
+    }
+}
