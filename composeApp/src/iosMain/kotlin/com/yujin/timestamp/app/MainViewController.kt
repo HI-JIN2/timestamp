@@ -1,7 +1,8 @@
 package com.yujin.timestamp.app
 
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.window.ComposeUIViewController
+import com.yujin.timestamp.core.model.TimestampExportRequest
+import com.yujin.timestamp.feature.editor.TimestampEditorRoute
 import platform.UIKit.UIViewController
 
 fun MainViewController(
@@ -11,7 +12,7 @@ fun MainViewController(
     onPickPhoto: () -> Unit = {},
     onExport: (TimestampExportRequest) -> Unit = {},
 ): UIViewController = ComposeUIViewController {
-    TimestampApp(
+    TimestampEditorRoute(
         selectedImageBase64 = selectedImageBase64,
         metadataTimestampLabel = metadataTimestampLabel,
         exportMessage = exportMessage,
@@ -19,5 +20,3 @@ fun MainViewController(
         onExport = onExport,
     )
 }
-
-internal actual fun decodeSelectedImage(base64: String): ImageBitmap? = null

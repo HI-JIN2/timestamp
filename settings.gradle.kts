@@ -29,5 +29,6 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
-include(":shared")
-
+include(":core:model")
+include(":domain:editor")
+include(":feature:editor")

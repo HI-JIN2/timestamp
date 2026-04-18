@@ -13,15 +13,17 @@ import android.util.Base64
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.exifinterface.media.ExifInterface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.yujin.timestamp.core.model.TimestampExportRequest
+import com.yujin.timestamp.core.model.TimestampImagePayload
+import com.yujin.timestamp.feature.editor.TimestampEditorRoute
 import java.io.OutputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -34,18 +36,22 @@ class MainActivity : ComponentActivity() {
             var metadataTimestampLabel by remember { mutableStateOf<String?>(null) }
             var exportMessage by remember { mutableStateOf<String?>(null) }
             val imagePicker = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.GetContent(),
+                contract = ActivityResultContracts.PickVisualMedia(),
             ) { uri ->
                 selectedImagePayload = uri?.readImagePayload()
                 metadataTimestampLabel = selectedImagePayload?.metadataTimestampLabel
                 exportMessage = null
             }
 
-            TimestampApp(
+            TimestampEditorRoute(
                 selectedImageBase64 = selectedImagePayload?.base64,
                 metadataTimestampLabel = metadataTimestampLabel,
                 exportMessage = exportMessage,
-                onPickPhoto = { imagePicker.launch("image/*") },
+                onPickPhoto = {
+                    imagePicker.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                    )
+                },
                 onExport = { request ->
                     exportMessage = exportTimestampedImage(request)
                 },
@@ -239,11 +245,6 @@ private data class AndroidCropPreset(
         }
     }
 }
-
-internal actual fun decodeSelectedImage(base64: String): ImageBitmap? = runCatching {
-    val bytes = Base64.decode(base64, Base64.DEFAULT)
-    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.asImageBitmap()
-}.getOrNull()
 
 private fun OutputStream?.useBitmap(bitmap: Bitmap) {
     if (this == null) error("outputStream unavailable")

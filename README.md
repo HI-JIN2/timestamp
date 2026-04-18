@@ -31,9 +31,18 @@ Initialize the Compose Multiplatform project baseline and then build the photo s
 
 ## Current Baseline
 
-- `composeApp`: shared Compose UI and Android application target
-- `shared`: reusable preview/domain model for feature growth
+- `composeApp`: app shell and platform integration layer
+- `feature/editor`: editor screen UI and MVVM + MVI presentation layer
+- `domain/editor`: editor use cases and pure business rules
+- `core/model`: shared cross-feature models
 - `iosApp`: SwiftUI host app that embeds the shared Compose view
+
+## Architecture
+
+- Clean Architecture baseline
+- Multi-module project structure
+- MVVM + MVI presentation model
+- Platform code isolated to app shell and native host layers
 
 ## Local Requirements
 

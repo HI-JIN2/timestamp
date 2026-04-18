@@ -13,6 +13,18 @@
 - Keep platform-specific code minimal and isolate it clearly
 - Favor small, reviewable commits for each work unit
 - Preserve a clean architecture that supports feature extension and testing
+- Use Clean Architecture as the default baseline
+- Structure the project as a multi-module codebase
+- Use MVVM + MVI in presentation layers
+
+## Architecture Rules
+
+- `composeApp` is the app shell and platform entry layer only
+- `feature/*` owns presentation UI, screen state, intents, and view models
+- `domain/*` owns use cases and pure business rules
+- `core/*` owns reusable cross-feature models and primitives
+- Avoid placing feature state machines or business logic directly in platform activities or SwiftUI hosts
+- Keep Android/iOS-specific IO, permission, media, and export code at the edge of the system
 
 ## Initial Technical Direction
 
@@ -20,6 +32,7 @@
 - Compose Multiplatform
 - Shared UI and domain logic where practical
 - Clear module boundaries from the start
+- Multi-module layering with app shell, feature, domain, and core modules
 
 ## Git Workflow
 
