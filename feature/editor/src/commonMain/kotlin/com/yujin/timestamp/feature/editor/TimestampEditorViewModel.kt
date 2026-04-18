@@ -4,37 +4,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.yujin.timestamp.core.model.TimestampExportRequest
-import com.yujin.timestamp.domain.editor.GetTimestampPreviewStateUseCase
+import com.yujin.timestamp.domain.editor.GetEditorInitialStateUseCase
 
 class TimestampEditorViewModel(
-    private val getTimestampPreviewState: GetTimestampPreviewStateUseCase,
+    private val getEditorInitialState: GetEditorInitialStateUseCase,
 ) {
-    var state by mutableStateOf(TimestampEditorContract.State())
+    var state by mutableStateOf(TimestampEditorUiContract.State())
         private set
 
-    fun dispatch(intent: TimestampEditorContract.Intent) {
+    fun dispatch(intent: TimestampEditorUiContract.Intent) {
         state = when (intent) {
-            is TimestampEditorContract.Intent.SyncExternal -> reduceExternal(intent)
-            is TimestampEditorContract.Intent.TimestampChanged -> state.copy(timestamp = intent.value)
-            TimestampEditorContract.Intent.ResetTimestamp -> state.copy(timestamp = state.defaultTimestamp)
-            is TimestampEditorContract.Intent.ToneChanged -> state.copy(overlayTone = intent.value)
-            is TimestampEditorContract.Intent.AlignmentChanged -> state.copy(overlayAlignment = intent.value)
-            is TimestampEditorContract.Intent.ScaleChanged -> state.copy(overlayScale = intent.value)
-            is TimestampEditorContract.Intent.InsetChanged -> state.copy(overlayInset = intent.value)
-            is TimestampEditorContract.Intent.SafeAreaChanged -> state.copy(overlaySafeArea = intent.value)
-            is TimestampEditorContract.Intent.OffsetXChanged -> state.copy(overlayOffsetXStep = intent.value.coerceIn(-3, 3))
-            is TimestampEditorContract.Intent.OffsetYChanged -> state.copy(overlayOffsetYStep = intent.value.coerceIn(-3, 3))
-            TimestampEditorContract.Intent.OpenCropEditor -> state.copy(isCropEditorVisible = true)
-            TimestampEditorContract.Intent.CloseCropEditor -> state.copy(isCropEditorVisible = false)
-            is TimestampEditorContract.Intent.AspectRatioChanged -> state.copy(aspectRatioPreset = intent.value)
-            is TimestampEditorContract.Intent.CropFrameDragged -> state.copy(
+            is TimestampEditorUiContract.Intent.SyncExternal -> reduceExternal(intent)
+            TimestampEditorUiContract.Intent.ResetTimestamp -> state.copy(timestamp = state.defaultTimestamp)
+            is TimestampEditorUiContract.Intent.ToneChanged -> state.copy(overlayTone = intent.value)
+            TimestampEditorUiContract.Intent.OpenCropEditor -> state.copy(isCropEditorVisible = true)
+            TimestampEditorUiContract.Intent.CloseCropEditor -> state.copy(isCropEditorVisible = false)
+            is TimestampEditorUiContract.Intent.AspectRatioChanged -> state.copy(aspectRatioPreset = intent.value)
+            is TimestampEditorUiContract.Intent.CropFrameDragged -> state.copy(
                 cropOffsetXRatio = (state.cropOffsetXRatio + intent.deltaXRatio).coerceIn(-1f, 1f),
                 cropOffsetYRatio = (state.cropOffsetYRatio + intent.deltaYRatio).coerceIn(-1f, 1f),
             )
-            is TimestampEditorContract.Intent.CropFrameScaled -> state.copy(
+            is TimestampEditorUiContract.Intent.CropFrameScaled -> state.copy(
                 cropScale = (state.cropScale * intent.scaleDelta).coerceIn(1f, 4f),
             )
-            TimestampEditorContract.Intent.ResetCrop -> state.copy(
+            TimestampEditorUiContract.Intent.ResetCrop -> state.copy(
                 cropScale = 1f,
                 cropOffsetXRatio = 0f,
                 cropOffsetYRatio = 0f,
@@ -67,26 +60,26 @@ class TimestampEditorViewModel(
     }
 
     private fun reduceExternal(
-        intent: TimestampEditorContract.Intent.SyncExternal,
-    ): TimestampEditorContract.State {
+        intent: TimestampEditorUiContract.Intent.SyncExternal,
+    ): TimestampEditorUiContract.State {
         val hasSelectedPhoto = intent.previewImage != null || intent.selectedImageBase64 != null
-        val preview = getTimestampPreviewState(
+        val initialState = getEditorInitialState(
             metadataTimestampLabel = intent.metadataTimestampLabel,
         )
         val shouldResetTimestamp = state.selectedImageBase64 != intent.selectedImageBase64 ||
-            state.defaultTimestamp != preview.timestampLabel
+            state.defaultTimestamp != initialState.timestampLabel
 
         return state.copy(
             selectedImageBase64 = intent.selectedImageBase64,
             previewImage = intent.previewImage,
             hasSelectedPhoto = hasSelectedPhoto,
-            defaultTimestamp = preview.timestampLabel,
+            defaultTimestamp = initialState.timestampLabel,
             timestamp = when {
                 intent.selectedTimestampLabel != null -> intent.selectedTimestampLabel
-                shouldResetTimestamp -> preview.timestampLabel
+                shouldResetTimestamp -> initialState.timestampLabel
                 else -> state.timestamp
             },
-            location = preview.locationLabel,
+            location = initialState.locationLabel,
             exportMessage = intent.exportMessage,
         )
     }

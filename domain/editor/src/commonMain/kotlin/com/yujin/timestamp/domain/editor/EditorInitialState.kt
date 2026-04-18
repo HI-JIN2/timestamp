@@ -1,6 +1,6 @@
 package com.yujin.timestamp.domain.editor
 
-data class TimestampPreviewState(
+data class EditorInitialState(
     val timestampLabel: String,
     val locationLabel: String,
 )

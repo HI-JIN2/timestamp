@@ -2,7 +2,7 @@ package com.yujin.timestamp.feature.editor
 
 import androidx.compose.ui.graphics.ImageBitmap
 
-object TimestampEditorContract {
+object TimestampEditorUiContract {
     data class State(
         val selectedImageBase64: String? = null,
         val previewImage: ImageBitmap? = null,
@@ -37,15 +37,8 @@ object TimestampEditorContract {
             val exportMessage: String?,
         ) : Intent
 
-        data class TimestampChanged(val value: String) : Intent
         data object ResetTimestamp : Intent
         data class ToneChanged(val value: TimestampOverlayTone) : Intent
-        data class AlignmentChanged(val value: TimestampOverlayAlignment) : Intent
-        data class ScaleChanged(val value: TimestampOverlayScale) : Intent
-        data class InsetChanged(val value: TimestampOverlayInset) : Intent
-        data class SafeAreaChanged(val value: TimestampOverlaySafeArea) : Intent
-        data class OffsetXChanged(val value: Int) : Intent
-        data class OffsetYChanged(val value: Int) : Intent
         data object OpenCropEditor : Intent
         data object CloseCropEditor : Intent
         data class AspectRatioChanged(val value: TimestampAspectRatioPreset) : Intent

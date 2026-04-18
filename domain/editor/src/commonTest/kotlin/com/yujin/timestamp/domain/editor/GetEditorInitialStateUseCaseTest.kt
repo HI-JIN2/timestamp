@@ -4,8 +4,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class GetTimestampPreviewStateUseCaseTest {
-    private val useCase = GetTimestampPreviewStateUseCase()
+class GetEditorInitialStateUseCaseTest {
+    private val useCase = GetEditorInitialStateUseCase()
 
     @Test
     fun returnsMetadataTimestampWhenAvailable() {

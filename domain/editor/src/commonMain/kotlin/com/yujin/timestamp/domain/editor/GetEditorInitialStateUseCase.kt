@@ -1,12 +1,12 @@
 package com.yujin.timestamp.domain.editor
 
-class GetTimestampPreviewStateUseCase {
+class GetEditorInitialStateUseCase {
     operator fun invoke(
         metadataTimestampLabel: String?,
-    ): TimestampPreviewState {
+    ): EditorInitialState {
         val timestampLabel = metadataTimestampLabel ?: "04.01.26  03:42"
 
-        return TimestampPreviewState(
+        return EditorInitialState(
             timestampLabel = timestampLabel,
             locationLabel = "SEOUL, KR",
         )
