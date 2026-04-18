@@ -301,12 +301,12 @@ private data class AndroidOverlayStylePreset(
     companion object {
         fun from(scaleKey: String, insetKey: String, safeAreaKey: String): AndroidOverlayStylePreset {
             val timestampRatio = when (scaleKey) {
-                "small" -> 0.042f
+                "small" -> 0.038f
                 "large" -> 0.074f
                 else -> 0.064f
             }
             val locationRatio = when (scaleKey) {
-                "small" -> 0.019f
+                "small" -> 0.017f
                 "large" -> 0.034f
                 else -> 0.029f
             }
