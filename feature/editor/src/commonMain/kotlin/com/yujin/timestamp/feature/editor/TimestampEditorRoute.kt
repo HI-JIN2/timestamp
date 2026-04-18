@@ -4,10 +4,12 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -37,29 +39,33 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yujin.timestamp.core.model.TimestampExportRequest
 import com.yujin.timestamp.domain.editor.GetTimestampPreviewStateUseCase
+import kotlin.math.roundToInt
 
 @Composable
 fun TimestampEditorRoute(
@@ -263,14 +269,11 @@ private fun CropEditorScreen(
                 cropOffsetXRatio = state.cropOffsetXRatio,
                 cropOffsetYRatio = state.cropOffsetYRatio,
                 palette = palette,
-                onGesture = { scaleDelta, panDeltaXRatio, panDeltaYRatio ->
-                    onIntent(
-                        TimestampEditorContract.Intent.CropGestureChanged(
-                            scaleDelta = scaleDelta,
-                            panDeltaXRatio = panDeltaXRatio,
-                            panDeltaYRatio = panDeltaYRatio,
-                        ),
-                    )
+                onFrameDragged = { deltaXRatio, deltaYRatio ->
+                    onIntent(TimestampEditorContract.Intent.CropFrameDragged(deltaXRatio, deltaYRatio))
+                },
+                onFrameScaled = { scaleDelta ->
+                    onIntent(TimestampEditorContract.Intent.CropFrameScaled(scaleDelta))
                 },
             )
         }
@@ -285,39 +288,114 @@ private fun CropGestureSurface(
     cropOffsetXRatio: Float,
     cropOffsetYRatio: Float,
     palette: EditorPalette,
-    onGesture: (Float, Float, Float) -> Unit,
+    onFrameDragged: (Float, Float) -> Unit,
+    onFrameScaled: (Float) -> Unit,
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize(),
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
+        val viewportWidthPx = constraints.maxWidth.toFloat().coerceAtLeast(1f)
+        val viewportHeightPx = constraints.maxHeight.toFloat().coerceAtLeast(1f)
+        val imageAspectRatio = previewImage.width.toFloat() / previewImage.height.toFloat()
+        val viewportAspectRatio = viewportWidthPx / viewportHeightPx
+
+        val imageWidthPx: Float
+        val imageHeightPx: Float
+        val imageModifier: Modifier
+        if (imageAspectRatio > viewportAspectRatio) {
+            imageWidthPx = viewportWidthPx
+            imageHeightPx = imageWidthPx / imageAspectRatio
+            imageModifier = Modifier.fillMaxWidth().aspectRatio(imageAspectRatio)
+        } else {
+            imageHeightPx = viewportHeightPx
+            imageWidthPx = imageHeightPx * imageAspectRatio
+            imageModifier = Modifier.fillMaxSize().aspectRatio(imageAspectRatio)
+        }
+
+        val cropAspectRatio = aspectRatioPreset.ratio
+        val maxCropWidthPx: Float
+        val maxCropHeightPx: Float
+        if (imageWidthPx / imageHeightPx > cropAspectRatio) {
+            maxCropHeightPx = imageHeightPx
+            maxCropWidthPx = maxCropHeightPx * cropAspectRatio
+        } else {
+            maxCropWidthPx = imageWidthPx
+            maxCropHeightPx = maxCropWidthPx / cropAspectRatio
+        }
+
+        val cropWidthPx = (maxCropWidthPx / cropScale).coerceAtLeast(maxCropWidthPx * 0.25f)
+        val cropHeightPx = (maxCropHeightPx / cropScale).coerceAtLeast(maxCropHeightPx * 0.25f)
+        val maxShiftX = ((imageWidthPx - cropWidthPx) / 2f).coerceAtLeast(0f)
+        val maxShiftY = ((imageHeightPx - cropHeightPx) / 2f).coerceAtLeast(0f)
+        val cropCenterX = imageWidthPx / 2f + cropOffsetXRatio.coerceIn(-1f, 1f) * maxShiftX
+        val cropCenterY = imageHeightPx / 2f + cropOffsetYRatio.coerceIn(-1f, 1f) * maxShiftY
+        val cropLeftPx = (cropCenterX - cropWidthPx / 2f).coerceIn(0f, imageWidthPx - cropWidthPx)
+        val cropTopPx = (cropCenterY - cropHeightPx / 2f).coerceIn(0f, imageHeightPx - cropHeightPx)
+
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp)
-                .aspectRatio(aspectRatioPreset.ratio)
-                .border(1.dp, palette.cropGuide)
-                .pointerInput(aspectRatioPreset, cropScale, cropOffsetXRatio, cropOffsetYRatio) {
-                    detectTransformGestures { _, pan, zoom, _ ->
-                        val width = size.width.coerceAtLeast(1).toFloat()
-                        val height = size.height.coerceAtLeast(1).toFloat()
-                        onGesture(
-                            zoom,
-                            pan.x / (width * 0.5f),
-                            pan.y / (height * 0.5f),
-                        )
-                    }
-                },
+            modifier = imageModifier.clipToBounds(),
+            contentAlignment = Alignment.Center,
         ) {
-            GestureDrivenImage(
-                previewImage = previewImage,
-                cropScale = cropScale,
-                cropOffsetXRatio = cropOffsetXRatio,
-                cropOffsetYRatio = cropOffsetYRatio,
+            Image(
+                bitmap = previewImage,
+                contentDescription = "크롭 편집 사진",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit,
             )
-            CropGridOverlay(palette)
-            CropCornerOverlay(palette)
+            CropMaskOverlay(
+                cropLeftPx = cropLeftPx,
+                cropTopPx = cropTopPx,
+                cropWidthPx = cropWidthPx,
+                cropHeightPx = cropHeightPx,
+                palette = palette,
+            )
+            Box(
+                modifier = Modifier
+                    .offset { IntOffset(cropLeftPx.roundToInt(), cropTopPx.roundToInt()) }
+                    .fillMaxWidth(fraction = cropWidthPx / imageWidthPx)
+                    .aspectRatio(cropAspectRatio)
+                    .border(1.dp, palette.cropGuide)
+                    .pointerInput(cropScale, cropOffsetXRatio, cropOffsetYRatio, imageWidthPx, imageHeightPx) {
+                        detectDragGestures { change, dragAmount ->
+                            change.consume()
+                            onFrameDragged(
+                                if (maxShiftX > 0f) dragAmount.x / maxShiftX else 0f,
+                                if (maxShiftY > 0f) dragAmount.y / maxShiftY else 0f,
+                            )
+                        }
+                    },
+            ) {
+                CropGridOverlay(palette)
+                CropCornerHandles(
+                    palette = palette,
+                    currentCropWidthPx = cropWidthPx,
+                    maxCropWidthPx = maxCropWidthPx,
+                    onScale = onFrameScaled,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CropMaskOverlay(
+    cropLeftPx: Float,
+    cropTopPx: Float,
+    cropWidthPx: Float,
+    cropHeightPx: Float,
+    palette: EditorPalette,
+) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        drawRect(color = palette.cropShade)
+        clipRect(
+            left = cropLeftPx,
+            top = cropTopPx,
+            right = cropLeftPx + cropWidthPx,
+            bottom = cropTopPx + cropHeightPx,
+            clipOp = ClipOp.Difference,
+        ) {
+            drawRect(color = palette.cropShade)
         }
     }
 }
@@ -352,10 +430,14 @@ private fun CropGridOverlay(palette: EditorPalette) {
 }
 
 @Composable
-private fun CropCornerOverlay(palette: EditorPalette) {
+private fun BoxScope.CropCornerHandles(
+    palette: EditorPalette,
+    currentCropWidthPx: Float,
+    maxCropWidthPx: Float,
+    onScale: (Float) -> Unit,
+) {
     Canvas(modifier = Modifier.fillMaxSize()) {
         val handleLength = size.minDimension * 0.055f
-        val inset = size.minDimension * 0.004f
         val stroke = size.minDimension * 0.008f
 
         fun drawCorner(originX: Float, originY: Float, horizontalSign: Float, verticalSign: Float) {
@@ -373,11 +455,70 @@ private fun CropCornerOverlay(palette: EditorPalette) {
             )
         }
 
-        drawCorner(inset, inset, 1f, 1f)
-        drawCorner(size.width - inset, inset, -1f, 1f)
-        drawCorner(inset, size.height - inset, 1f, -1f)
-        drawCorner(size.width - inset, size.height - inset, -1f, -1f)
+        drawCorner(0f, 0f, 1f, 1f)
+        drawCorner(size.width, 0f, -1f, 1f)
+        drawCorner(0f, size.height, 1f, -1f)
+        drawCorner(size.width, size.height, -1f, -1f)
     }
+
+    CropResizeHandle(
+        modifier = Modifier.align(Alignment.TopStart),
+        horizontalSign = -1f,
+        verticalSign = -1f,
+        currentCropWidthPx = currentCropWidthPx,
+        maxCropWidthPx = maxCropWidthPx,
+        onScale = onScale,
+    )
+    CropResizeHandle(
+        modifier = Modifier.align(Alignment.TopEnd),
+        horizontalSign = 1f,
+        verticalSign = -1f,
+        currentCropWidthPx = currentCropWidthPx,
+        maxCropWidthPx = maxCropWidthPx,
+        onScale = onScale,
+    )
+    CropResizeHandle(
+        modifier = Modifier.align(Alignment.BottomStart),
+        horizontalSign = -1f,
+        verticalSign = 1f,
+        currentCropWidthPx = currentCropWidthPx,
+        maxCropWidthPx = maxCropWidthPx,
+        onScale = onScale,
+    )
+    CropResizeHandle(
+        modifier = Modifier.align(Alignment.BottomEnd),
+        horizontalSign = 1f,
+        verticalSign = 1f,
+        currentCropWidthPx = currentCropWidthPx,
+        maxCropWidthPx = maxCropWidthPx,
+        onScale = onScale,
+    )
+}
+
+@Composable
+private fun BoxScope.CropResizeHandle(
+    modifier: Modifier,
+    horizontalSign: Float,
+    verticalSign: Float,
+    currentCropWidthPx: Float,
+    maxCropWidthPx: Float,
+    onScale: (Float) -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .padding(14.dp)
+            .pointerInput(currentCropWidthPx, maxCropWidthPx) {
+                detectDragGestures { change, dragAmount ->
+                    change.consume()
+                    val widthDelta = (horizontalSign * dragAmount.x + verticalSign * dragAmount.y) / 2f
+                    val targetWidth = (currentCropWidthPx + widthDelta).coerceIn(
+                        maxCropWidthPx * 0.25f,
+                        maxCropWidthPx,
+                    )
+                    onScale(currentCropWidthPx / targetWidth)
+                }
+            },
+    )
 }
 
 @Composable
@@ -565,6 +706,7 @@ private data class EditorPalette(
     val cropGuide: Color,
     val cropFrame: Color,
     val cropGrid: Color,
+    val cropShade: Color,
     val previewGradient: List<Color>,
     val previewBorder: Color,
     val placeholderText: Color,
@@ -580,6 +722,7 @@ private fun rememberEditorPalette(isDarkTheme: Boolean): EditorPalette {
                 cropGuide = Color.White.copy(alpha = 0.22f),
                 cropFrame = Color.White.copy(alpha = 0.9f),
                 cropGrid = Color.White.copy(alpha = 0.45f),
+                cropShade = Color.Black.copy(alpha = 0.42f),
                 previewGradient = listOf(Color(0xFF2A2A2A), Color(0xFF171717), Color(0xFF080808)),
                 previewBorder = Color.White.copy(alpha = 0.12f),
                 placeholderText = Color(0xFFD8D8D8),
@@ -591,6 +734,7 @@ private fun rememberEditorPalette(isDarkTheme: Boolean): EditorPalette {
                 cropGuide = Color.Black.copy(alpha = 0.18f),
                 cropFrame = Color.Black.copy(alpha = 0.92f),
                 cropGrid = Color.Black.copy(alpha = 0.26f),
+                cropShade = Color.Black.copy(alpha = 0.18f),
                 previewGradient = listOf(Color(0xFFF6F6F6), Color(0xFFD9D9D9), Color(0xFFB8B8B8)),
                 previewBorder = Color.Black.copy(alpha = 0.12f),
                 placeholderText = Color(0xFF4A4A4A),

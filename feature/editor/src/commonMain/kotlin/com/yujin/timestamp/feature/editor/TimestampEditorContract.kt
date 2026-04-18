@@ -48,11 +48,11 @@ object TimestampEditorContract {
         data object OpenCropEditor : Intent
         data object CloseCropEditor : Intent
         data class AspectRatioChanged(val value: TimestampAspectRatioPreset) : Intent
-        data class CropGestureChanged(
-            val scaleDelta: Float,
-            val panDeltaXRatio: Float,
-            val panDeltaYRatio: Float,
+        data class CropFrameDragged(
+            val deltaXRatio: Float,
+            val deltaYRatio: Float,
         ) : Intent
+        data class CropFrameScaled(val scaleDelta: Float) : Intent
         data object ResetCrop : Intent
     }
 }

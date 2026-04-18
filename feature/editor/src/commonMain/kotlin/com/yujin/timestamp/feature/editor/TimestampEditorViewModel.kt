@@ -27,10 +27,12 @@ class TimestampEditorViewModel(
             TimestampEditorContract.Intent.OpenCropEditor -> state.copy(isCropEditorVisible = true)
             TimestampEditorContract.Intent.CloseCropEditor -> state.copy(isCropEditorVisible = false)
             is TimestampEditorContract.Intent.AspectRatioChanged -> state.copy(aspectRatioPreset = intent.value)
-            is TimestampEditorContract.Intent.CropGestureChanged -> state.copy(
+            is TimestampEditorContract.Intent.CropFrameDragged -> state.copy(
+                cropOffsetXRatio = (state.cropOffsetXRatio + intent.deltaXRatio).coerceIn(-1f, 1f),
+                cropOffsetYRatio = (state.cropOffsetYRatio + intent.deltaYRatio).coerceIn(-1f, 1f),
+            )
+            is TimestampEditorContract.Intent.CropFrameScaled -> state.copy(
                 cropScale = (state.cropScale * intent.scaleDelta).coerceIn(1f, 4f),
-                cropOffsetXRatio = (state.cropOffsetXRatio + intent.panDeltaXRatio).coerceIn(-1f, 1f),
-                cropOffsetYRatio = (state.cropOffsetYRatio + intent.panDeltaYRatio).coerceIn(-1f, 1f),
             )
             TimestampEditorContract.Intent.ResetCrop -> state.copy(
                 cropScale = 1f,
