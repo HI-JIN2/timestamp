@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -26,9 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -105,9 +103,10 @@ private fun PreviewCanvas(
         if (state.previewImage != null) {
             GestureDrivenImage(
                 previewImage = state.previewImage,
-                cropScale = state.cropScale,
-                cropOffsetXRatio = state.cropOffsetXRatio,
-                cropOffsetYRatio = state.cropOffsetYRatio,
+                cropLeftRatio = state.cropLeftRatio,
+                cropTopRatio = state.cropTopRatio,
+                cropWidthRatio = state.cropWidthRatio,
+                cropHeightRatio = state.cropHeightRatio,
             )
         } else if (!state.hasSelectedPhoto) {
             Text(
@@ -162,24 +161,28 @@ private fun PrimaryActionRow(
 @Composable
 private fun GestureDrivenImage(
     previewImage: ImageBitmap,
-    cropScale: Float,
-    cropOffsetXRatio: Float,
-    cropOffsetYRatio: Float,
+    cropLeftRatio: Float,
+    cropTopRatio: Float,
+    cropWidthRatio: Float,
+    cropHeightRatio: Float,
 ) {
-    Image(
-        bitmap = previewImage,
-        contentDescription = stringResource(Res.string.preview_image_description),
-        modifier = Modifier
-            .fillMaxSize()
-            .graphicsLayer(
-                scaleX = cropScale,
-                scaleY = cropScale,
-                translationX = cropOffsetXRatio * 180f,
-                translationY = cropOffsetYRatio * 180f,
-                transformOrigin = TransformOrigin.Center,
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        drawImage(
+            image = previewImage,
+            srcOffset = androidx.compose.ui.unit.IntOffset(
+                x = (previewImage.width * cropLeftRatio).toInt(),
+                y = (previewImage.height * cropTopRatio).toInt(),
             ),
-        contentScale = ContentScale.Crop,
-    )
+            srcSize = androidx.compose.ui.unit.IntSize(
+                width = (previewImage.width * cropWidthRatio).toInt().coerceAtLeast(1),
+                height = (previewImage.height * cropHeightRatio).toInt().coerceAtLeast(1),
+            ),
+            dstSize = androidx.compose.ui.unit.IntSize(
+                width = size.width.toInt().coerceAtLeast(1),
+                height = size.height.toInt().coerceAtLeast(1),
+            ),
+        )
+    }
 }
 
 @Composable

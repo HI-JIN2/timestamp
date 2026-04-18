@@ -19,19 +19,26 @@ class TimestampEditorViewModel(
             is TimestampEditorUiContract.Intent.ToneChanged -> state.copy(overlayTone = intent.value)
             TimestampEditorUiContract.Intent.OpenCropEditor -> state.copy(isCropEditorVisible = true)
             TimestampEditorUiContract.Intent.CloseCropEditor -> state.copy(isCropEditorVisible = false)
-            is TimestampEditorUiContract.Intent.AspectRatioChanged -> state.copy(aspectRatioPreset = intent.value)
-            is TimestampEditorUiContract.Intent.CropFrameDragged -> state.copy(
-                cropOffsetXRatio = (state.cropOffsetXRatio + intent.deltaXRatio).coerceIn(-1f, 1f),
-                cropOffsetYRatio = (state.cropOffsetYRatio + intent.deltaYRatio).coerceIn(-1f, 1f),
+            is TimestampEditorUiContract.Intent.AspectRatioChanged -> {
+                val cropRect = defaultCropRect(
+                    previewImage = state.previewImage,
+                    aspectRatio = intent.value.ratio,
+                )
+                state.copy(
+                    aspectRatioPreset = intent.value,
+                    cropLeftRatio = cropRect.leftRatio,
+                    cropTopRatio = cropRect.topRatio,
+                    cropWidthRatio = cropRect.widthRatio,
+                    cropHeightRatio = cropRect.heightRatio,
+                )
+            }
+            is TimestampEditorUiContract.Intent.CropRectChanged -> state.copy(
+                cropLeftRatio = intent.leftRatio,
+                cropTopRatio = intent.topRatio,
+                cropWidthRatio = intent.widthRatio,
+                cropHeightRatio = intent.heightRatio,
             )
-            is TimestampEditorUiContract.Intent.CropFrameScaled -> state.copy(
-                cropScale = (state.cropScale * intent.scaleDelta).coerceIn(1f, 4f),
-            )
-            TimestampEditorUiContract.Intent.ResetCrop -> state.copy(
-                cropScale = 1f,
-                cropOffsetXRatio = 0f,
-                cropOffsetYRatio = 0f,
-            )
+            TimestampEditorUiContract.Intent.ResetCrop -> resetCrop()
         }
     }
 
@@ -53,9 +60,10 @@ class TimestampEditorViewModel(
             offsetXStep = state.overlayOffsetXStep,
             offsetYStep = state.overlayOffsetYStep,
             aspectRatioKey = state.aspectRatioPreset.exportKey,
-            cropScale = state.cropScale,
-            cropOffsetXRatio = state.cropOffsetXRatio,
-            cropOffsetYRatio = state.cropOffsetYRatio,
+            cropLeftRatio = state.cropLeftRatio,
+            cropTopRatio = state.cropTopRatio,
+            cropWidthRatio = state.cropWidthRatio,
+            cropHeightRatio = state.cropHeightRatio,
         )
     }
 
@@ -68,6 +76,11 @@ class TimestampEditorViewModel(
         )
         val shouldResetTimestamp = state.selectedImageBase64 != intent.selectedImageBase64 ||
             state.defaultTimestamp != initialState.timestampLabel
+        val shouldResetCrop = state.selectedImageBase64 != intent.selectedImageBase64
+        val defaultCropRect = defaultCropRect(
+            previewImage = intent.previewImage,
+            aspectRatio = state.aspectRatioPreset.ratio,
+        )
 
         return state.copy(
             selectedImageBase64 = intent.selectedImageBase64,
@@ -81,6 +94,23 @@ class TimestampEditorViewModel(
             },
             location = initialState.locationLabel,
             exportMessage = intent.exportMessage,
+            cropLeftRatio = if (shouldResetCrop) defaultCropRect.leftRatio else state.cropLeftRatio,
+            cropTopRatio = if (shouldResetCrop) defaultCropRect.topRatio else state.cropTopRatio,
+            cropWidthRatio = if (shouldResetCrop) defaultCropRect.widthRatio else state.cropWidthRatio,
+            cropHeightRatio = if (shouldResetCrop) defaultCropRect.heightRatio else state.cropHeightRatio,
+        )
+    }
+
+    private fun resetCrop(): TimestampEditorUiContract.State {
+        val cropRect = defaultCropRect(
+            previewImage = state.previewImage,
+            aspectRatio = state.aspectRatioPreset.ratio,
+        )
+        return state.copy(
+            cropLeftRatio = cropRect.leftRatio,
+            cropTopRatio = cropRect.topRatio,
+            cropWidthRatio = cropRect.widthRatio,
+            cropHeightRatio = cropRect.heightRatio,
         )
     }
 }

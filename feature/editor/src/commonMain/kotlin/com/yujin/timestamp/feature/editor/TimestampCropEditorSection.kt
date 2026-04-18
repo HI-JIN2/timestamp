@@ -52,15 +52,20 @@ internal fun CropEditorSection(
             CropGestureSurface(
                 previewImage = state.previewImage ?: return@Box,
                 aspectRatioPreset = state.aspectRatioPreset,
-                cropScale = state.cropScale,
-                cropOffsetXRatio = state.cropOffsetXRatio,
-                cropOffsetYRatio = state.cropOffsetYRatio,
+                cropLeftRatio = state.cropLeftRatio,
+                cropTopRatio = state.cropTopRatio,
+                cropWidthRatio = state.cropWidthRatio,
+                cropHeightRatio = state.cropHeightRatio,
                 palette = palette,
-                onFrameDragged = { deltaXRatio, deltaYRatio ->
-                    onIntent(TimestampEditorUiContract.Intent.CropFrameDragged(deltaXRatio, deltaYRatio))
-                },
-                onFrameScaled = { scaleDelta ->
-                    onIntent(TimestampEditorUiContract.Intent.CropFrameScaled(scaleDelta))
+                onCropRectChanged = { leftRatio, topRatio, widthRatio, heightRatio ->
+                    onIntent(
+                        TimestampEditorUiContract.Intent.CropRectChanged(
+                            leftRatio = leftRatio,
+                            topRatio = topRatio,
+                            widthRatio = widthRatio,
+                            heightRatio = heightRatio,
+                        ),
+                    )
                 },
             )
         }

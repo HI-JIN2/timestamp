@@ -168,9 +168,10 @@ private func renderTimestampedImage(
         let cgImage = image.cgImage,
         let cropPreset = iosCropPreset(
             aspectRatioKey: request.aspectRatioKey,
-            cropScale: CGFloat(request.cropScale),
-            offsetXRatio: CGFloat(request.cropOffsetXRatio),
-            offsetYRatio: CGFloat(request.cropOffsetYRatio),
+            cropLeftRatio: CGFloat(request.cropLeftRatio),
+            cropTopRatio: CGFloat(request.cropTopRatio),
+            cropWidthRatio: CGFloat(request.cropWidthRatio),
+            cropHeightRatio: CGFloat(request.cropHeightRatio),
             width: CGFloat(cgImage.width),
             height: CGFloat(cgImage.height)
         ),
@@ -244,33 +245,17 @@ private func renderTimestampedImage(
 
 private func iosCropPreset(
     aspectRatioKey: String,
-    cropScale: CGFloat,
-    offsetXRatio: CGFloat,
-    offsetYRatio: CGFloat,
+    cropLeftRatio: CGFloat,
+    cropTopRatio: CGFloat,
+    cropWidthRatio: CGFloat,
+    cropHeightRatio: CGFloat,
     width: CGFloat,
     height: CGFloat
 ) -> (sourceRect: CGRect)? {
-    let aspectRatio: CGFloat = aspectRatioKey == "16_9" ? (16 / 9) : (4 / 3)
-    let zoom = min(max(cropScale, 1), 4)
-
-    let baseCropWidth: CGFloat
-    let baseCropHeight: CGFloat
-    if width / height > aspectRatio {
-        baseCropHeight = height
-        baseCropWidth = baseCropHeight * aspectRatio
-    } else {
-        baseCropWidth = width
-        baseCropHeight = baseCropWidth / aspectRatio
-    }
-
-    let cropWidth = baseCropWidth / zoom
-    let cropHeight = baseCropHeight / zoom
-    let maxShiftX = max((width - cropWidth) / 2, 0)
-    let maxShiftY = max((height - cropHeight) / 2, 0)
-    let centerX = width / 2 + min(max(offsetXRatio, -1), 1) * maxShiftX
-    let centerY = height / 2 + min(max(offsetYRatio, -1), 1) * maxShiftY
-    let left = min(max(centerX - cropWidth / 2, 0), width - cropWidth)
-    let top = min(max(centerY - cropHeight / 2, 0), height - cropHeight)
+    let cropWidth = max(width * cropWidthRatio, 1)
+    let cropHeight = max(height * cropHeightRatio, 1)
+    let left = min(max(width * cropLeftRatio, 0), width - cropWidth)
+    let top = min(max(height * cropTopRatio, 0), height - cropHeight)
 
     return (sourceRect: CGRect(x: left, y: top, width: cropWidth, height: cropHeight).integral)
 }

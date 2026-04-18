@@ -135,9 +135,10 @@ class MainActivity : ComponentActivity() {
             ?: return null
         val cropPreset = AndroidCropPreset.from(
             aspectRatioKey = request.aspectRatioKey,
-            cropScale = request.cropScale,
-            offsetXRatio = request.cropOffsetXRatio,
-            offsetYRatio = request.cropOffsetYRatio,
+            cropLeftRatio = request.cropLeftRatio,
+            cropTopRatio = request.cropTopRatio,
+            cropWidthRatio = request.cropWidthRatio,
+            cropHeightRatio = request.cropHeightRatio,
             sourceWidth = sourceBitmap.width,
             sourceHeight = sourceBitmap.height,
         )
@@ -241,43 +242,24 @@ private data class AndroidCropPreset(
     companion object {
         fun from(
             aspectRatioKey: String,
-            cropScale: Float,
-            offsetXRatio: Float,
-            offsetYRatio: Float,
+            cropLeftRatio: Float,
+            cropTopRatio: Float,
+            cropWidthRatio: Float,
+            cropHeightRatio: Float,
             sourceWidth: Int,
             sourceHeight: Int,
         ): AndroidCropPreset {
-            val aspectRatio = when (aspectRatioKey) {
-                "16_9" -> 16f / 9f
-                else -> 4f / 3f
-            }
-            val zoom = cropScale.coerceIn(1f, 4f)
-
-            val baseCropWidth: Float
-            val baseCropHeight: Float
-            if (sourceWidth.toFloat() / sourceHeight > aspectRatio) {
-                baseCropHeight = sourceHeight.toFloat()
-                baseCropWidth = baseCropHeight * aspectRatio
-            } else {
-                baseCropWidth = sourceWidth.toFloat()
-                baseCropHeight = baseCropWidth / aspectRatio
-            }
-
-            val cropWidth = baseCropWidth / zoom
-            val cropHeight = baseCropHeight / zoom
-            val maxShiftX = ((sourceWidth - cropWidth) / 2f).coerceAtLeast(0f)
-            val maxShiftY = ((sourceHeight - cropHeight) / 2f).coerceAtLeast(0f)
-            val centerX = sourceWidth / 2f + offsetXRatio.coerceIn(-1f, 1f) * maxShiftX
-            val centerY = sourceHeight / 2f + offsetYRatio.coerceIn(-1f, 1f) * maxShiftY
-            val left = (centerX - cropWidth / 2f).coerceIn(0f, sourceWidth - cropWidth)
-            val top = (centerY - cropHeight / 2f).coerceIn(0f, sourceHeight - cropHeight)
+            val cropWidth = (sourceWidth * cropWidthRatio).coerceAtLeast(1f)
+            val cropHeight = (sourceHeight * cropHeightRatio).coerceAtLeast(1f)
+            val left = (sourceWidth * cropLeftRatio).coerceIn(0f, sourceWidth - cropWidth)
+            val top = (sourceHeight * cropTopRatio).coerceIn(0f, sourceHeight - cropHeight)
 
             return AndroidCropPreset(
                 sourceRect = Rect(
                     left.toInt(),
                     top.toInt(),
-                    (left + cropWidth).toInt(),
-                    (top + cropHeight).toInt(),
+                    (left + cropWidth).toInt().coerceAtMost(sourceWidth),
+                    (top + cropHeight).toInt().coerceAtMost(sourceHeight),
                 ),
                 outputWidth = cropWidth.toInt(),
                 outputHeight = cropHeight.toInt(),

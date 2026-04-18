@@ -20,9 +20,10 @@ object TimestampEditorUiContract {
         val overlayOffsetXStep: Int = 1,
         val overlayOffsetYStep: Int = -1,
         val aspectRatioPreset: TimestampAspectRatioPreset = TimestampAspectRatioPreset.FourThree,
-        val cropScale: Float = 1f,
-        val cropOffsetXRatio: Float = 0f,
-        val cropOffsetYRatio: Float = 0f,
+        val cropLeftRatio: Float = 0f,
+        val cropTopRatio: Float = 0f,
+        val cropWidthRatio: Float = 1f,
+        val cropHeightRatio: Float = 1f,
     ) {
         val isExportEnabled: Boolean
             get() = hasSelectedPhoto && timestamp.isNotBlank()
@@ -42,11 +43,12 @@ object TimestampEditorUiContract {
         data object OpenCropEditor : Intent
         data object CloseCropEditor : Intent
         data class AspectRatioChanged(val value: TimestampAspectRatioPreset) : Intent
-        data class CropFrameDragged(
-            val deltaXRatio: Float,
-            val deltaYRatio: Float,
+        data class CropRectChanged(
+            val leftRatio: Float,
+            val topRatio: Float,
+            val widthRatio: Float,
+            val heightRatio: Float,
         ) : Intent
-        data class CropFrameScaled(val scaleDelta: Float) : Intent
         data object ResetCrop : Intent
     }
 }
