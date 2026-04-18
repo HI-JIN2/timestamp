@@ -56,7 +56,7 @@ enum class TimestampOverlayScale(
     val locationFontSp: Int,
     val exportKey: String,
 ) {
-    Small("작게", 16, 9, "small"),
+    Small("작게", 13, 7, "small"),
     Medium("보통", 28, 14, "medium"),
     Large("크게", 32, 16, "large"),
 }

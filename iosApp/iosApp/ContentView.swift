@@ -225,8 +225,8 @@ private func iosOverlayStylePreset(scaleKey: String, insetKey: String, safeAreaK
     let locationRatio: CGFloat
     switch scaleKey {
     case "small":
-        timestampRatio = 0.052
-        locationRatio = 0.024
+        timestampRatio = 0.042
+        locationRatio = 0.019
     case "large":
         timestampRatio = 0.074
         locationRatio = 0.034
