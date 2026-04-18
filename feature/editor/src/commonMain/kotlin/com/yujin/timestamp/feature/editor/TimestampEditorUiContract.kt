@@ -30,26 +30,31 @@ object TimestampEditorUiContract {
             get() = hasSelectedPhoto && timestamp.isNotBlank()
     }
 
-    sealed interface Intent {
+    sealed interface Action {
         data class SyncExternal(
             val selectedImageBase64: String?,
             val previewImage: ImageBitmap?,
             val metadataTimestampLabel: String?,
             val selectedTimestampLabel: String?,
             val exportMessage: String?,
-        ) : Intent
+        ) : Action
 
-        data object ResetTimestamp : Intent
-        data class ToneChanged(val value: TimestampOverlayTone) : Intent
-        data object OpenCropEditor : Intent
-        data object CloseCropEditor : Intent
-        data class AspectRatioChanged(val value: TimestampAspectRatio) : Intent
+        data object PickPhoto : Action
+        data class EditDateRequested(val value: String) : Action
+        data class EditTimeRequested(val value: String) : Action
+        data object Export : Action
+        data object ExportMessageShown : Action
+        data object ResetTimestamp : Action
+        data class ToneChanged(val value: TimestampOverlayTone) : Action
+        data object OpenCropEditor : Action
+        data object CloseCropEditor : Action
+        data class AspectRatioChanged(val value: TimestampAspectRatio) : Action
         data class CropRectChanged(
             val leftRatio: Float,
             val topRatio: Float,
             val widthRatio: Float,
             val heightRatio: Float,
-        ) : Intent
-        data object ResetCrop : Intent
+        ) : Action
+        data object ResetCrop : Action
     }
 }

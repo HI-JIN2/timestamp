@@ -41,10 +41,7 @@ import timestamp.feature.editor.generated.resources.*
 @Composable
 internal fun PreviewPanel(
     state: TimestampEditorUiContract.State,
-    onIntent: (TimestampEditorUiContract.Intent) -> Unit,
-    onEditDateRequest: (String) -> Unit,
-    onEditTimeRequest: (String) -> Unit,
-    onExport: () -> Unit,
+    actions: (TimestampEditorUiContract.Action) -> Unit,
     palette: EditorPalette,
 ) {
     Card(
@@ -66,8 +63,12 @@ internal fun PreviewPanel(
             TimestampFieldRow(
                 timestamp = state.timestamp,
                 enabled = state.hasSelectedPhoto,
-                onEditDateRequest = onEditDateRequest,
-                onEditTimeRequest = onEditTimeRequest,
+                onEditDateRequest = {
+                    actions(TimestampEditorUiContract.Action.EditDateRequested(it))
+                },
+                onEditTimeRequest = {
+                    actions(TimestampEditorUiContract.Action.EditTimeRequested(it))
+                },
             )
 
             OverlayControlRow(
@@ -75,15 +76,15 @@ internal fun PreviewPanel(
                 options = TimestampOverlayTone.entries,
                 selected = state.overlayTone,
                 optionLabelRes = { it.labelRes },
-                onSelected = { onIntent(TimestampEditorUiContract.Intent.ToneChanged(it)) },
+                onSelected = { actions(TimestampEditorUiContract.Action.ToneChanged(it)) },
             )
 
             HorizontalDivider(color = palette.divider)
             PrimaryActionRow(
                 hasSelectedPhoto = state.hasSelectedPhoto,
                 isExportEnabled = state.isExportEnabled,
-                onResetTimestamp = { onIntent(TimestampEditorUiContract.Intent.ResetTimestamp) },
-                onExport = onExport,
+                onResetTimestamp = { actions(TimestampEditorUiContract.Action.ResetTimestamp) },
+                onExport = { actions(TimestampEditorUiContract.Action.Export) },
             )
         }
     }

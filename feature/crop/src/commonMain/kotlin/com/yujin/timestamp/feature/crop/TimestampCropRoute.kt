@@ -13,9 +13,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -31,21 +30,31 @@ import timestamp.feature.crop.generated.resources.reset
 
 @Composable
 fun TimestampCropRoute(
-    previewImage: ImageBitmap,
-    aspectRatioPreset: TimestampAspectRatio,
-    cropLeftRatio: Float,
-    cropTopRatio: Float,
-    cropWidthRatio: Float,
-    cropHeightRatio: Float,
-    onAspectRatioChanged: (TimestampAspectRatio) -> Unit,
-    onCropRectChanged: (Float, Float, Float, Float) -> Unit,
-    onResetCrop: () -> Unit,
-    onClose: () -> Unit,
+    state: TimestampCropUiContract.State,
+    actions: (TimestampCropUiContract.Action) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val palette = rememberTimestampCropPalette(isSystemInDarkTheme())
 
+    MaterialTheme(colorScheme = timestampCropColorScheme(isSystemInDarkTheme())) {
+        TimestampCropScreen(
+            state = state,
+            actions = actions,
+            modifier = modifier,
+            palette = palette,
+        )
+    }
+}
+
+@Composable
+internal fun TimestampCropScreen(
+    state: TimestampCropUiContract.State,
+    actions: (TimestampCropUiContract.Action) -> Unit,
+    modifier: Modifier = Modifier,
+    palette: TimestampCropPalette,
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 20.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -62,12 +71,12 @@ fun TimestampCropRoute(
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
-                    onClick = onResetCrop,
+                    onClick = { actions(TimestampCropUiContract.Action.Reset) },
                     shape = RectangleShape,
                     colors = cropActionButtonColors(),
                 ) { Text(stringResource(Res.string.reset)) }
                 Button(
-                    onClick = onClose,
+                    onClick = { actions(TimestampCropUiContract.Action.Done) },
                     shape = RectangleShape,
                     colors = cropActionButtonColors(),
                 ) { Text(stringResource(Res.string.done)) }
@@ -77,14 +86,14 @@ fun TimestampCropRoute(
         CropControlRow(
             label = stringResource(Res.string.crop_ratio),
             options = TimestampAspectRatio.entries,
-            selected = aspectRatioPreset,
+            selected = state.aspectRatio,
             optionLabelRes = {
                 when (it) {
                     TimestampAspectRatio.ThreeFour -> Res.string.aspect_ratio_three_four
                     TimestampAspectRatio.SixteenNine -> Res.string.aspect_ratio_sixteen_nine
                 }
             },
-            onSelected = onAspectRatioChanged,
+            onSelected = { actions(TimestampCropUiContract.Action.AspectRatioChanged(it)) },
         )
 
         Box(
@@ -95,14 +104,23 @@ fun TimestampCropRoute(
             contentAlignment = Alignment.Center,
         ) {
             TimestampCropCanvas(
-                previewImage = previewImage,
-                aspectRatioPreset = aspectRatioPreset,
-                cropLeftRatio = cropLeftRatio,
-                cropTopRatio = cropTopRatio,
-                cropWidthRatio = cropWidthRatio,
-                cropHeightRatio = cropHeightRatio,
+                previewImage = state.previewImage,
+                aspectRatioPreset = state.aspectRatio,
+                cropLeftRatio = state.cropLeftRatio,
+                cropTopRatio = state.cropTopRatio,
+                cropWidthRatio = state.cropWidthRatio,
+                cropHeightRatio = state.cropHeightRatio,
                 palette = palette,
-                onCropRectChanged = onCropRectChanged,
+                onCropRectChanged = { leftRatio, topRatio, widthRatio, heightRatio ->
+                    actions(
+                        TimestampCropUiContract.Action.CropRectChanged(
+                            leftRatio = leftRatio,
+                            topRatio = topRatio,
+                            widthRatio = widthRatio,
+                            heightRatio = heightRatio,
+                        ),
+                    )
+                },
             )
         }
     }

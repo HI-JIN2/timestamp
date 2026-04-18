@@ -29,7 +29,7 @@ fun TimestampEditorRoute(
 
     LaunchedEffect(selectedImageBase64, metadataTimestampLabel, selectedTimestampLabel, exportMessage, previewImage) {
         viewModel.dispatch(
-            TimestampEditorUiContract.Intent.SyncExternal(
+            TimestampEditorUiContract.Action.SyncExternal(
                 selectedImageBase64 = selectedImageBase64,
                 previewImage = previewImage,
                 metadataTimestampLabel = metadataTimestampLabel,
@@ -40,14 +40,31 @@ fun TimestampEditorRoute(
     }
 
     val state by remember { derivedStateOf { viewModel.state } }
+    val actions: (TimestampEditorUiContract.Action) -> Unit = remember(
+        viewModel,
+        state,
+        onPickPhoto,
+        onEditDateRequest,
+        onEditTimeRequest,
+        onExport,
+        onExportMessageConsumed,
+    ) {
+        { action ->
+            when (action) {
+                TimestampEditorUiContract.Action.PickPhoto -> onPickPhoto()
+                is TimestampEditorUiContract.Action.EditDateRequested -> onEditDateRequest(action.value)
+                is TimestampEditorUiContract.Action.EditTimeRequested -> onEditTimeRequest(action.value)
+                TimestampEditorUiContract.Action.Export -> {
+                    viewModel.buildExportRequest()?.let(onExport)
+                }
+                TimestampEditorUiContract.Action.ExportMessageShown -> onExportMessageConsumed()
+                else -> viewModel.dispatch(action)
+            }
+        }
+    }
 
     TimestampEditorScreen(
         state = state,
-        onIntent = viewModel::dispatch,
-        onPickPhoto = onPickPhoto,
-        onEditDateRequest = onEditDateRequest,
-        onEditTimeRequest = onEditTimeRequest,
-        onExport = { viewModel.buildExportRequest()?.let(onExport) },
-        onExportMessageConsumed = onExportMessageConsumed,
+        actions = actions,
     )
 }
