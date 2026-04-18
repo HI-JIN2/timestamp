@@ -32,10 +32,12 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
@@ -105,6 +107,8 @@ private fun TimestampEditorScreen(
     onExportMessageConsumed: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    val isDarkTheme = isSystemInDarkTheme()
+    val editorPalette = rememberEditorPalette(isDarkTheme)
 
     LaunchedEffect(state.exportMessage) {
         val message = state.exportMessage ?: return@LaunchedEffect
@@ -115,7 +119,7 @@ private fun TimestampEditorScreen(
         onExportMessageConsumed()
     }
 
-    MaterialTheme(colorScheme = retroColorScheme()) {
+    MaterialTheme(colorScheme = timestampColorScheme(isDarkTheme)) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = MaterialTheme.colorScheme.background,
@@ -135,6 +139,7 @@ private fun TimestampEditorScreen(
                     CropEditorScreen(
                         state = state,
                         onIntent = onIntent,
+                        palette = editorPalette,
                     )
                 } else {
                     EditorHomeScreen(
@@ -142,6 +147,7 @@ private fun TimestampEditorScreen(
                         onIntent = onIntent,
                         onPickPhoto = onPickPhoto,
                         onExport = onExport,
+                        palette = editorPalette,
                     )
                 }
             }
@@ -166,6 +172,7 @@ private fun EditorHomeScreen(
     onIntent: (TimestampEditorContract.Intent) -> Unit,
     onPickPhoto: () -> Unit,
     onExport: () -> Unit,
+    palette: EditorPalette,
 ) {
     Column(
         modifier = Modifier
@@ -196,6 +203,7 @@ private fun EditorHomeScreen(
             state = state,
             onIntent = onIntent,
             onExport = onExport,
+            palette = palette,
         )
     }
 }
@@ -204,6 +212,7 @@ private fun EditorHomeScreen(
 private fun CropEditorScreen(
     state: TimestampEditorContract.State,
     onIntent: (TimestampEditorContract.Intent) -> Unit,
+    palette: EditorPalette,
 ) {
     Column(
         modifier = Modifier
@@ -243,7 +252,7 @@ private fun CropEditorScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .background(Color(0xFF16120F)),
+                .background(palette.cropBackground),
             contentAlignment = Alignment.Center,
         ) {
             CropGestureSurface(
@@ -252,6 +261,7 @@ private fun CropEditorScreen(
                 cropScale = state.cropScale,
                 cropOffsetXRatio = state.cropOffsetXRatio,
                 cropOffsetYRatio = state.cropOffsetYRatio,
+                palette = palette,
                 onGesture = { scaleDelta, panDeltaXRatio, panDeltaYRatio ->
                     onIntent(
                         TimestampEditorContract.Intent.CropGestureChanged(
@@ -273,13 +283,14 @@ private fun CropGestureSurface(
     cropScale: Float,
     cropOffsetXRatio: Float,
     cropOffsetYRatio: Float,
+    palette: EditorPalette,
     onGesture: (Float, Float, Float) -> Unit,
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(aspectRatioPreset.ratio)
-                .border(1.dp, Color.White.copy(alpha = 0.35f))
+                .border(1.dp, palette.cropGuide)
                 .pointerInput(aspectRatioPreset, cropScale, cropOffsetXRatio, cropOffsetYRatio) {
                     detectTransformGestures { _, pan, zoom, _ ->
                         val width = size.width.coerceAtLeast(1).toFloat()
@@ -301,7 +312,7 @@ private fun CropGestureSurface(
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .border(2.dp, Color(0xFFE6D8BE)),
+                .border(2.dp, palette.cropFrame),
         )
     }
 }
@@ -311,6 +322,7 @@ private fun PreviewCard(
     state: TimestampEditorContract.State,
     onIntent: (TimestampEditorContract.Intent) -> Unit,
     onExport: () -> Unit,
+    palette: EditorPalette,
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -326,12 +338,8 @@ private fun PreviewCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(state.aspectRatioPreset.ratio)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(Color(0xFFE6D8BE), Color(0xFFC7B08A), Color(0xFF6C5A45)),
-                        ),
-                    )
-                    .border(1.dp, Color(0x1A000000)),
+                    .background(Brush.verticalGradient(colors = palette.previewGradient))
+                    .border(1.dp, palette.previewBorder),
             ) {
                 if (state.previewImage != null) {
                     GestureDrivenImage(
@@ -344,7 +352,7 @@ private fun PreviewCard(
                     Text(
                         text = "선택한 사진이 여기에 표시됩니다",
                         modifier = Modifier.align(Alignment.Center),
-                        color = Color(0xFF4F4131),
+                        color = palette.placeholderText,
                         style = MaterialTheme.typography.bodyLarge,
                     )
                 }
@@ -374,7 +382,7 @@ private fun PreviewCard(
                 onIntent(TimestampEditorContract.Intent.ToneChanged(it))
             }
 
-            HorizontalDivider(color = Color(0x14000000))
+            HorizontalDivider(color = palette.divider)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(
                     onClick = { onIntent(TimestampEditorContract.Intent.ResetTimestamp) },
@@ -489,13 +497,69 @@ private fun overlayTextStyle(
     ),
 )
 
-@Composable
-private fun retroColorScheme() = lightColorScheme(
-    primary = Color(0xFFAB5C1D),
-    onPrimary = Color(0xFFFFF7F1),
-    secondary = Color(0xFF73614C),
-    background = Color(0xFFF6F0E6),
-    surface = Color(0xFFFFFBF5),
-    surfaceVariant = Color(0xFFE8DDCF),
-    onSurfaceVariant = Color(0xFF594835),
+private data class EditorPalette(
+    val cropBackground: Color,
+    val cropGuide: Color,
+    val cropFrame: Color,
+    val previewGradient: List<Color>,
+    val previewBorder: Color,
+    val placeholderText: Color,
+    val divider: Color,
 )
+
+@Composable
+private fun rememberEditorPalette(isDarkTheme: Boolean): EditorPalette {
+    return remember(isDarkTheme) {
+        if (isDarkTheme) {
+            EditorPalette(
+                cropBackground = Color(0xFF050505),
+                cropGuide = Color.White.copy(alpha = 0.22f),
+                cropFrame = Color.White.copy(alpha = 0.9f),
+                previewGradient = listOf(Color(0xFF2A2A2A), Color(0xFF171717), Color(0xFF080808)),
+                previewBorder = Color.White.copy(alpha = 0.12f),
+                placeholderText = Color(0xFFD8D8D8),
+                divider = Color.White.copy(alpha = 0.08f),
+            )
+        } else {
+            EditorPalette(
+                cropBackground = Color(0xFFF2F2F2),
+                cropGuide = Color.Black.copy(alpha = 0.18f),
+                cropFrame = Color.Black.copy(alpha = 0.92f),
+                previewGradient = listOf(Color(0xFFF6F6F6), Color(0xFFD9D9D9), Color(0xFFB8B8B8)),
+                previewBorder = Color.Black.copy(alpha = 0.12f),
+                placeholderText = Color(0xFF4A4A4A),
+                divider = Color.Black.copy(alpha = 0.08f),
+            )
+        }
+    }
+}
+
+private fun timestampColorScheme(isDarkTheme: Boolean) = if (isDarkTheme) {
+    darkColorScheme(
+        primary = Color.White,
+        onPrimary = Color.Black,
+        secondary = Color(0xFFD0D0D0),
+        onSecondary = Color.Black,
+        background = Color(0xFF000000),
+        onBackground = Color(0xFFF5F5F5),
+        surface = Color(0xFF0E0E0E),
+        onSurface = Color(0xFFF5F5F5),
+        surfaceVariant = Color(0xFF181818),
+        onSurfaceVariant = Color(0xFFB8B8B8),
+        outline = Color(0xFF3A3A3A),
+    )
+} else {
+    lightColorScheme(
+        primary = Color.Black,
+        onPrimary = Color.White,
+        secondary = Color(0xFF3A3A3A),
+        onSecondary = Color.White,
+        background = Color(0xFFFFFFFF),
+        onBackground = Color(0xFF111111),
+        surface = Color(0xFFF7F7F7),
+        onSurface = Color(0xFF111111),
+        surfaceVariant = Color(0xFFEDEDED),
+        onSurfaceVariant = Color(0xFF5A5A5A),
+        outline = Color(0xFFBDBDBD),
+    )
+}
