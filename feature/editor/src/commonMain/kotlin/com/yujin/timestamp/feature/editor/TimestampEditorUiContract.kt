@@ -1,7 +1,7 @@
 package com.yujin.timestamp.feature.editor
 
 import androidx.compose.ui.graphics.ImageBitmap
-import com.yujin.timestamp.feature.crop.TimestampAspectRatioPreset
+import com.yujin.timestamp.core.model.TimestampAspectRatio
 
 object TimestampEditorUiContract {
     data class State(
@@ -20,7 +20,7 @@ object TimestampEditorUiContract {
         val overlaySafeArea: TimestampOverlaySafeArea = TimestampOverlaySafeArea.Off,
         val overlayOffsetXStep: Int = 1,
         val overlayOffsetYStep: Int = -1,
-        val aspectRatioPreset: TimestampAspectRatioPreset = TimestampAspectRatioPreset.FourThree,
+        val aspectRatioPreset: TimestampAspectRatio = TimestampAspectRatio.ThreeFour,
         val cropLeftRatio: Float = 0f,
         val cropTopRatio: Float = 0f,
         val cropWidthRatio: Float = 1f,
@@ -43,7 +43,7 @@ object TimestampEditorUiContract {
         data class ToneChanged(val value: TimestampOverlayTone) : Intent
         data object OpenCropEditor : Intent
         data object CloseCropEditor : Intent
-        data class AspectRatioChanged(val value: TimestampAspectRatioPreset) : Intent
+        data class AspectRatioChanged(val value: TimestampAspectRatio) : Intent
         data class CropRectChanged(
             val leftRatio: Float,
             val topRatio: Float,

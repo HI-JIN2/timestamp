@@ -1,10 +1,7 @@
 package com.yujin.timestamp.feature.crop
 
 import androidx.compose.ui.graphics.ImageBitmap
-import org.jetbrains.compose.resources.StringResource
-import timestamp.feature.crop.generated.resources.Res
-import timestamp.feature.crop.generated.resources.aspect_ratio_four_three
-import timestamp.feature.crop.generated.resources.aspect_ratio_sixteen_nine
+import com.yujin.timestamp.core.model.TimestampAspectRatio
 
 data class TimestampCropRect(
     val leftRatio: Float,
@@ -13,18 +10,9 @@ data class TimestampCropRect(
     val heightRatio: Float,
 )
 
-enum class TimestampAspectRatioPreset(
-    val labelRes: StringResource,
-    val ratio: Float,
-    val exportKey: String,
-) {
-    FourThree(Res.string.aspect_ratio_four_three, 4f / 3f, "4_3"),
-    SixteenNine(Res.string.aspect_ratio_sixteen_nine, 16f / 9f, "16_9"),
-}
-
 fun defaultCropRect(
     previewImage: ImageBitmap?,
-    aspectRatio: Float,
+    aspectRatio: TimestampAspectRatio,
 ): TimestampCropRect {
     if (previewImage == null) {
         return TimestampCropRect(0f, 0f, 1f, 1f)
@@ -36,12 +24,12 @@ fun defaultCropRect(
 
     val cropWidth: Float
     val cropHeight: Float
-    if (imageAspectRatio > aspectRatio) {
+    if (imageAspectRatio > aspectRatio.ratio) {
         cropHeight = imageHeight
-        cropWidth = cropHeight * aspectRatio
+        cropWidth = cropHeight * aspectRatio.ratio
     } else {
         cropWidth = imageWidth
-        cropHeight = cropWidth / aspectRatio
+        cropHeight = cropWidth / aspectRatio.ratio
     }
 
     val left = (imageWidth - cropWidth) / 2f

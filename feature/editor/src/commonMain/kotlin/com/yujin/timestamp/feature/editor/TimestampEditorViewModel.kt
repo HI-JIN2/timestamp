@@ -23,7 +23,7 @@ class TimestampEditorViewModel(
             is TimestampEditorUiContract.Intent.AspectRatioChanged -> {
                 val cropRect = defaultCropRect(
                     previewImage = state.previewImage,
-                    aspectRatio = intent.value.ratio,
+                    aspectRatio = intent.value,
                 )
                 state.copy(
                     aspectRatioPreset = intent.value,
@@ -60,7 +60,7 @@ class TimestampEditorViewModel(
             safeAreaKey = state.overlaySafeArea.exportKey,
             offsetXStep = state.overlayOffsetXStep,
             offsetYStep = state.overlayOffsetYStep,
-            aspectRatioKey = state.aspectRatioPreset.exportKey,
+            aspectRatio = state.aspectRatioPreset,
             cropLeftRatio = state.cropLeftRatio,
             cropTopRatio = state.cropTopRatio,
             cropWidthRatio = state.cropWidthRatio,
@@ -80,7 +80,7 @@ class TimestampEditorViewModel(
         val shouldResetCrop = state.selectedImageBase64 != intent.selectedImageBase64
         val defaultCropRect = defaultCropRect(
             previewImage = intent.previewImage,
-            aspectRatio = state.aspectRatioPreset.ratio,
+            aspectRatio = state.aspectRatioPreset,
         )
 
         return state.copy(
@@ -105,7 +105,7 @@ class TimestampEditorViewModel(
     private fun resetCrop(): TimestampEditorUiContract.State {
         val cropRect = defaultCropRect(
             previewImage = state.previewImage,
-            aspectRatio = state.aspectRatioPreset.ratio,
+            aspectRatio = state.aspectRatioPreset,
         )
         return state.copy(
             cropLeftRatio = cropRect.leftRatio,

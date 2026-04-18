@@ -13,7 +13,7 @@ data class TimestampExportRequest(
     val safeAreaKey: String,
     val offsetXStep: Int,
     val offsetYStep: Int,
-    val aspectRatioKey: String,
+    val aspectRatio: TimestampAspectRatio,
     val cropLeftRatio: Float,
     val cropTopRatio: Float,
     val cropWidthRatio: Float,

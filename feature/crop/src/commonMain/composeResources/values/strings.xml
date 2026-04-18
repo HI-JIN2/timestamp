@@ -5,6 +5,6 @@
     <string name="crop_ratio">Crop Ratio</string>
     <string name="reset">Reset</string>
     <string name="done">Done</string>
-    <string name="aspect_ratio_four_three">4:3</string>
+    <string name="aspect_ratio_three_four">3:4</string>
     <string name="aspect_ratio_sixteen_nine">16:9</string>
 </resources>

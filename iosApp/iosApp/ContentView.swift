@@ -191,7 +191,6 @@ private func renderTimestampedImage(
     guard
         let cgImage = image.cgImage,
         let cropPreset = iosCropPreset(
-            aspectRatioKey: request.aspectRatioKey,
             cropLeftRatio: CGFloat(request.cropLeftRatio),
             cropTopRatio: CGFloat(request.cropTopRatio),
             cropWidthRatio: CGFloat(request.cropWidthRatio),
@@ -268,7 +267,6 @@ private func renderTimestampedImage(
 }
 
 private func iosCropPreset(
-    aspectRatioKey: String,
     cropLeftRatio: CGFloat,
     cropTopRatio: CGFloat,
     cropWidthRatio: CGFloat,

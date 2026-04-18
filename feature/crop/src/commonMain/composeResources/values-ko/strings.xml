@@ -5,6 +5,6 @@
     <string name="crop_ratio">크롭 비율</string>
     <string name="reset">초기화</string>
     <string name="done">완료</string>
-    <string name="aspect_ratio_four_three">4:3</string>
+    <string name="aspect_ratio_three_four">3:4</string>
     <string name="aspect_ratio_sixteen_nine">16:9</string>
 </resources>

@@ -26,6 +26,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.yujin.timestamp.core.model.TimestampAspectRatio
 import org.jetbrains.compose.resources.stringResource
 import timestamp.feature.crop.generated.resources.Res
 import timestamp.feature.crop.generated.resources.crop_image_description
@@ -48,7 +49,7 @@ private data class CropRectPx(
 @Composable
 internal fun TimestampCropCanvas(
     previewImage: ImageBitmap,
-    aspectRatioPreset: TimestampAspectRatioPreset,
+    aspectRatioPreset: TimestampAspectRatio,
     cropLeftRatio: Float,
     cropTopRatio: Float,
     cropWidthRatio: Float,

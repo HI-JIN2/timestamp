@@ -19,8 +19,11 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.yujin.timestamp.core.model.TimestampAspectRatio
 import org.jetbrains.compose.resources.stringResource
 import timestamp.feature.crop.generated.resources.Res
+import timestamp.feature.crop.generated.resources.aspect_ratio_sixteen_nine
+import timestamp.feature.crop.generated.resources.aspect_ratio_three_four
 import timestamp.feature.crop.generated.resources.crop_editor_title
 import timestamp.feature.crop.generated.resources.crop_ratio
 import timestamp.feature.crop.generated.resources.done
@@ -29,12 +32,12 @@ import timestamp.feature.crop.generated.resources.reset
 @Composable
 fun TimestampCropRoute(
     previewImage: ImageBitmap,
-    aspectRatioPreset: TimestampAspectRatioPreset,
+    aspectRatioPreset: TimestampAspectRatio,
     cropLeftRatio: Float,
     cropTopRatio: Float,
     cropWidthRatio: Float,
     cropHeightRatio: Float,
-    onAspectRatioChanged: (TimestampAspectRatioPreset) -> Unit,
+    onAspectRatioChanged: (TimestampAspectRatio) -> Unit,
     onCropRectChanged: (Float, Float, Float, Float) -> Unit,
     onResetCrop: () -> Unit,
     onClose: () -> Unit,
@@ -73,9 +76,14 @@ fun TimestampCropRoute(
 
         CropControlRow(
             label = stringResource(Res.string.crop_ratio),
-            options = TimestampAspectRatioPreset.entries,
+            options = TimestampAspectRatio.entries,
             selected = aspectRatioPreset,
-            optionLabelRes = { it.labelRes },
+            optionLabelRes = {
+                when (it) {
+                    TimestampAspectRatio.ThreeFour -> Res.string.aspect_ratio_three_four
+                    TimestampAspectRatio.SixteenNine -> Res.string.aspect_ratio_sixteen_nine
+                }
+            },
             onSelected = onAspectRatioChanged,
         )
 

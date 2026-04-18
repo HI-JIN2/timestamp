@@ -137,7 +137,6 @@ class MainActivity : ComponentActivity() {
         val sourceBitmap = BitmapFactory.decodeByteArray(sourceBytes, 0, sourceBytes.size)
             ?: return null
         val cropPreset = AndroidCropPreset.from(
-            aspectRatioKey = request.aspectRatioKey,
             cropLeftRatio = request.cropLeftRatio,
             cropTopRatio = request.cropTopRatio,
             cropWidthRatio = request.cropWidthRatio,
@@ -265,7 +264,6 @@ private data class AndroidCropPreset(
 ) {
     companion object {
         fun from(
-            aspectRatioKey: String,
             cropLeftRatio: Float,
             cropTopRatio: Float,
             cropWidthRatio: Float,
