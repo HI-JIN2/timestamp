@@ -56,7 +56,7 @@ enum class TimestampOverlayScale(
     val locationFontSp: Int,
     val exportKey: String,
 ) {
-    Small("작게", 24, 12, "small"),
+    Small("작게", 16, 9, "small"),
     Medium("보통", 28, 14, "medium"),
     Large("크게", 32, 16, "large"),
 }
@@ -89,15 +89,4 @@ enum class TimestampAspectRatioPreset(
 ) {
     FourThree("4:3", 4f / 3f, "4_3"),
     SixteenNine("16:9", 16f / 9f, "16_9"),
-}
-
-enum class TimestampCropZoomPreset(
-    val label: String,
-    val previewScale: Float,
-    val exportScale: Float,
-    val exportKey: String,
-) {
-    Fit("기본", 1f, 1f, "fit"),
-    Close("가깝게", 1.15f, 1.15f, "close"),
-    Closer("더 가깝게", 1.3f, 1.3f, "closer"),
 }

@@ -125,9 +125,9 @@ class MainActivity : ComponentActivity() {
             ?: return null
         val cropPreset = AndroidCropPreset.from(
             aspectRatioKey = request.aspectRatioKey,
-            zoomKey = request.cropZoomKey,
-            offsetXStep = request.cropOffsetXStep,
-            offsetYStep = request.cropOffsetYStep,
+            cropScale = request.cropScale,
+            offsetXRatio = request.cropOffsetXRatio,
+            offsetYRatio = request.cropOffsetYRatio,
             sourceWidth = sourceBitmap.width,
             sourceHeight = sourceBitmap.height,
         )
@@ -197,9 +197,9 @@ private data class AndroidCropPreset(
     companion object {
         fun from(
             aspectRatioKey: String,
-            zoomKey: String,
-            offsetXStep: Int,
-            offsetYStep: Int,
+            cropScale: Float,
+            offsetXRatio: Float,
+            offsetYRatio: Float,
             sourceWidth: Int,
             sourceHeight: Int,
         ): AndroidCropPreset {
@@ -207,11 +207,7 @@ private data class AndroidCropPreset(
                 "16_9" -> 16f / 9f
                 else -> 4f / 3f
             }
-            val zoom = when (zoomKey) {
-                "close" -> 1.15f
-                "closer" -> 1.3f
-                else -> 1f
-            }
+            val zoom = cropScale.coerceIn(1f, 4f)
 
             val baseCropWidth: Float
             val baseCropHeight: Float
@@ -227,8 +223,8 @@ private data class AndroidCropPreset(
             val cropHeight = baseCropHeight / zoom
             val maxShiftX = ((sourceWidth - cropWidth) / 2f).coerceAtLeast(0f)
             val maxShiftY = ((sourceHeight - cropHeight) / 2f).coerceAtLeast(0f)
-            val centerX = sourceWidth / 2f + (offsetXStep / 3f) * maxShiftX
-            val centerY = sourceHeight / 2f + (offsetYStep / 3f) * maxShiftY
+            val centerX = sourceWidth / 2f + offsetXRatio.coerceIn(-1f, 1f) * maxShiftX
+            val centerY = sourceHeight / 2f + offsetYRatio.coerceIn(-1f, 1f) * maxShiftY
             val left = (centerX - cropWidth / 2f).coerceIn(0f, sourceWidth - cropWidth)
             val top = (centerY - cropHeight / 2f).coerceIn(0f, sourceHeight - cropHeight)
 

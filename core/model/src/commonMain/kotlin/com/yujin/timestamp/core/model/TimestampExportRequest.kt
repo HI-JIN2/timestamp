@@ -14,7 +14,7 @@ data class TimestampExportRequest(
     val offsetXStep: Int,
     val offsetYStep: Int,
     val aspectRatioKey: String,
-    val cropZoomKey: String,
-    val cropOffsetXStep: Int,
-    val cropOffsetYStep: Int,
+    val cropScale: Float,
+    val cropOffsetXRatio: Float,
+    val cropOffsetYRatio: Float,
 )

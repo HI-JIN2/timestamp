@@ -3,6 +3,7 @@ package com.yujin.timestamp.feature.editor
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -33,13 +34,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -98,39 +100,17 @@ private fun TimestampEditorScreen(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 28.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-            ) {
-                Text(
-                    text = "Timestamp",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.5).sp,
-                    ),
+            if (state.isCropEditorVisible && state.previewImage != null) {
+                CropEditorScreen(
+                    state = state,
+                    onIntent = onIntent,
                 )
-                Text(
-                    text = "Clean Architecture 기반 멀티모듈 구조에서 동작하는 MVVM + MVI 편집 화면입니다.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                PreviewCard(
+            } else {
+                EditorHomeScreen(
                     state = state,
                     onIntent = onIntent,
                     onPickPhoto = onPickPhoto,
                     onExport = onExport,
-                )
-                RoadmapCard(
-                    title = "다음 구현 순서",
-                    lines = listOf(
-                        "1. 저장용 비트맵에 동일 오버레이 합성",
-                        "2. 타임스탬프 폰트/간격 프리셋 확장",
-                        "3. 위치 미세 조정과 안전 영역 처리",
-                        "4. 저장 및 공유 파이프라인 정리",
-                    ),
                 )
             }
         }
@@ -138,10 +118,166 @@ private fun TimestampEditorScreen(
 }
 
 @Composable
-private fun PreviewCard(
+private fun EditorHomeScreen(
     state: TimestampEditorContract.State,
     onIntent: (TimestampEditorContract.Intent) -> Unit,
     onPickPhoto: () -> Unit,
+    onExport: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 28.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+    ) {
+        Text(
+            text = "Timestamp",
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontWeight = FontWeight.Bold,
+                letterSpacing = (-0.5).sp,
+            ),
+        )
+        Text(
+            text = "사진 선택 후 별도 크롭 화면에서 4:3 또는 16:9 비율을 고르고 손가락으로 직접 구도를 조정합니다.",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Button(onClick = onPickPhoto) {
+                Text(if (state.hasSelectedPhoto) "사진 다시 선택" else "사진 선택")
+            }
+            Button(
+                onClick = { onIntent(TimestampEditorContract.Intent.OpenCropEditor) },
+                enabled = state.hasSelectedPhoto,
+            ) {
+                Text("크롭 편집")
+            }
+        }
+        PreviewCard(
+            state = state,
+            onIntent = onIntent,
+            onExport = onExport,
+        )
+    }
+}
+
+@Composable
+private fun CropEditorScreen(
+    state: TimestampEditorContract.State,
+    onIntent: (TimestampEditorContract.Intent) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "크롭 편집",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = { onIntent(TimestampEditorContract.Intent.ResetCrop) }) {
+                    Text("초기화")
+                }
+                Button(onClick = { onIntent(TimestampEditorContract.Intent.CloseCropEditor) }) {
+                    Text("완료")
+                }
+            }
+        }
+
+        Text(
+            text = "화면에서 두 손가락으로 확대/축소하고 드래그로 구도를 맞춥니다.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        OverlayControlRow(
+            label = "크롭 비율",
+            options = TimestampAspectRatioPreset.entries,
+            selected = state.aspectRatioPreset,
+            optionLabel = { it.label },
+            onSelected = { onIntent(TimestampEditorContract.Intent.AspectRatioChanged(it)) },
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .background(Color(0xFF16120F)),
+            contentAlignment = Alignment.Center,
+        ) {
+            CropGestureSurface(
+                previewImage = state.previewImage ?: return@Box,
+                aspectRatioPreset = state.aspectRatioPreset,
+                cropScale = state.cropScale,
+                cropOffsetXRatio = state.cropOffsetXRatio,
+                cropOffsetYRatio = state.cropOffsetYRatio,
+                onGesture = { scaleDelta, panDeltaXRatio, panDeltaYRatio ->
+                    onIntent(
+                        TimestampEditorContract.Intent.CropGestureChanged(
+                            scaleDelta = scaleDelta,
+                            panDeltaXRatio = panDeltaXRatio,
+                            panDeltaYRatio = panDeltaYRatio,
+                        ),
+                    )
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun CropGestureSurface(
+    previewImage: ImageBitmap,
+    aspectRatioPreset: TimestampAspectRatioPreset,
+    cropScale: Float,
+    cropOffsetXRatio: Float,
+    cropOffsetYRatio: Float,
+    onGesture: (Float, Float, Float) -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(aspectRatioPreset.ratio)
+                .border(1.dp, Color.White.copy(alpha = 0.35f))
+                .pointerInput(aspectRatioPreset, cropScale, cropOffsetXRatio, cropOffsetYRatio) {
+                    detectTransformGestures { _, pan, zoom, _ ->
+                        val width = size.width.coerceAtLeast(1).toFloat()
+                        val height = size.height.coerceAtLeast(1).toFloat()
+                        onGesture(
+                            zoom,
+                            pan.x / (width * 0.5f),
+                        pan.y / (height * 0.5f),
+                    )
+                }
+            },
+    ) {
+        GestureDrivenImage(
+            previewImage = previewImage,
+            cropScale = cropScale,
+            cropOffsetXRatio = cropOffsetXRatio,
+            cropOffsetYRatio = cropOffsetYRatio,
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .border(2.dp, Color(0xFFE6D8BE)),
+        )
+    }
+}
+
+@Composable
+private fun PreviewCard(
+    state: TimestampEditorContract.State,
+    onIntent: (TimestampEditorContract.Intent) -> Unit,
     onExport: () -> Unit,
 ) {
     Card(
@@ -154,7 +290,7 @@ private fun PreviewCard(
                 .padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text("프리뷰 구조", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text("프리뷰", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Text(
                 text = if (state.hasSelectedPhoto) "사진 선택 완료" else "사진 미선택",
                 style = MaterialTheme.typography.labelLarge,
@@ -164,20 +300,19 @@ private fun PreviewCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(state.aspectRatioPreset.ratio)
-                    .clip(RoundedCornerShape(22.dp))
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(Color(0xFFE6D8BE), Color(0xFFC7B08A), Color(0xFF6C5A45)),
                         ),
                     )
-                    .border(1.dp, Color(0x1A000000), RoundedCornerShape(22.dp)),
+                    .border(1.dp, Color(0x1A000000)),
             ) {
                 if (state.previewImage != null) {
-                    CroppedPreviewImage(
+                    GestureDrivenImage(
                         previewImage = state.previewImage,
-                        cropZoomPreset = state.cropZoomPreset,
-                        cropOffsetXStep = state.cropOffsetXStep,
-                        cropOffsetYStep = state.cropOffsetYStep,
+                        cropScale = state.cropScale,
+                        cropOffsetXRatio = state.cropOffsetXRatio,
+                        cropOffsetYRatio = state.cropOffsetYRatio,
                     )
                 } else if (!state.hasSelectedPhoto) {
                     Text(
@@ -218,40 +353,9 @@ private fun PreviewCard(
             OverlayControlRow("오버레이 톤", TimestampOverlayTone.entries, state.overlayTone, { it.label }) {
                 onIntent(TimestampEditorContract.Intent.ToneChanged(it))
             }
-            OverlayControlRow("오버레이 위치", TimestampOverlayAlignment.entries, state.overlayAlignment, { it.label }) {
-                onIntent(TimestampEditorContract.Intent.AlignmentChanged(it))
-            }
-            OverlayControlRow("글자 크기", TimestampOverlayScale.entries, state.overlayScale, { it.label }) {
-                onIntent(TimestampEditorContract.Intent.ScaleChanged(it))
-            }
-            OverlayControlRow("하단 여백", TimestampOverlayInset.entries, state.overlayInset, { it.label }) {
-                onIntent(TimestampEditorContract.Intent.InsetChanged(it))
-            }
-            OverlayControlRow("안전 영역", TimestampOverlaySafeArea.entries, state.overlaySafeArea, { it.label }) {
-                onIntent(TimestampEditorContract.Intent.SafeAreaChanged(it))
-            }
-            NudgeControlRow("좌우 미세 조정", state.overlayOffsetXStep) {
-                onIntent(TimestampEditorContract.Intent.OffsetXChanged(it))
-            }
-            NudgeControlRow("상하 미세 조정", state.overlayOffsetYStep) {
-                onIntent(TimestampEditorContract.Intent.OffsetYChanged(it))
-            }
-            OverlayControlRow("비율 선택", TimestampAspectRatioPreset.entries, state.aspectRatioPreset, { it.label }) {
-                onIntent(TimestampEditorContract.Intent.AspectRatioChanged(it))
-            }
-            OverlayControlRow("크롭 줌", TimestampCropZoomPreset.entries, state.cropZoomPreset, { it.label }) {
-                onIntent(TimestampEditorContract.Intent.CropZoomChanged(it))
-            }
-            NudgeControlRow("크롭 좌우 구도", state.cropOffsetXStep) {
-                onIntent(TimestampEditorContract.Intent.CropOffsetXChanged(it))
-            }
-            NudgeControlRow("크롭 상하 구도", state.cropOffsetYStep) {
-                onIntent(TimestampEditorContract.Intent.CropOffsetYChanged(it))
-            }
 
             HorizontalDivider(color = Color(0x14000000))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(onClick = onPickPhoto) { Text("사진 선택") }
                 Button(
                     onClick = { onIntent(TimestampEditorContract.Intent.ResetTimestamp) },
                     enabled = state.hasSelectedPhoto,
@@ -263,11 +367,11 @@ private fun PreviewCard(
 }
 
 @Composable
-private fun CroppedPreviewImage(
-    previewImage: androidx.compose.ui.graphics.ImageBitmap,
-    cropZoomPreset: TimestampCropZoomPreset,
-    cropOffsetXStep: Int,
-    cropOffsetYStep: Int,
+private fun GestureDrivenImage(
+    previewImage: ImageBitmap,
+    cropScale: Float,
+    cropOffsetXRatio: Float,
+    cropOffsetYRatio: Float,
 ) {
     Image(
         bitmap = previewImage,
@@ -275,10 +379,10 @@ private fun CroppedPreviewImage(
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer(
-                scaleX = cropZoomPreset.previewScale,
-                scaleY = cropZoomPreset.previewScale,
-                translationX = cropOffsetXStep * 18f,
-                translationY = cropOffsetYStep * 18f,
+                scaleX = cropScale,
+                scaleY = cropScale,
+                translationX = cropOffsetXRatio * 180f,
+                translationY = cropOffsetYRatio * 180f,
                 transformOrigin = TransformOrigin.Center,
             ),
         contentScale = ContentScale.Crop,
@@ -353,25 +457,6 @@ private fun <T> OverlayControlRow(
     }
 }
 
-@Composable
-private fun NudgeControlRow(
-    label: String,
-    value: Int,
-    onValueChange: (Int) -> Unit,
-) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = "$label: $value",
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Button(onClick = { onValueChange(value - 1) }) { Text("-") }
-        Button(onClick = { onValueChange(0) }) { Text("0") }
-        Button(onClick = { onValueChange(value + 1) }) { Text("+") }
-    }
-}
-
 private fun overlayTextStyle(
     shadowColor: Color,
     blurRadius: Float,
@@ -383,27 +468,6 @@ private fun overlayTextStyle(
         blurRadius = blurRadius,
     ),
 )
-
-@Composable
-private fun RoadmapCard(
-    title: String,
-    lines: List<String>,
-) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        shape = RoundedCornerShape(24.dp),
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            lines.forEach { line ->
-                Text(line, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-    }
-}
 
 @Composable
 private fun retroColorScheme() = lightColorScheme(

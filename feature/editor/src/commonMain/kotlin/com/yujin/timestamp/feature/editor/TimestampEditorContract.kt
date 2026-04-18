@@ -6,6 +6,7 @@ object TimestampEditorContract {
     data class State(
         val selectedImageBase64: String? = null,
         val previewImage: ImageBitmap? = null,
+        val isCropEditorVisible: Boolean = false,
         val hasSelectedPhoto: Boolean = false,
         val defaultTimestamp: String = "04.01.26  03:42",
         val timestamp: String = "04.01.26  03:42",
@@ -14,16 +15,16 @@ object TimestampEditorContract {
         val helperText: String = "사진을 고르면 실제 프리뷰를 표시하고, 메타데이터 날짜를 기본 타임스탬프로 불러옵니다.",
         val exportMessage: String? = null,
         val overlayTone: TimestampOverlayTone = TimestampOverlayTone.ClassicAmber,
-        val overlayAlignment: TimestampOverlayAlignment = TimestampOverlayAlignment.BottomStart,
-        val overlayScale: TimestampOverlayScale = TimestampOverlayScale.Medium,
+        val overlayAlignment: TimestampOverlayAlignment = TimestampOverlayAlignment.BottomEnd,
+        val overlayScale: TimestampOverlayScale = TimestampOverlayScale.Small,
         val overlayInset: TimestampOverlayInset = TimestampOverlayInset.Balanced,
         val overlaySafeArea: TimestampOverlaySafeArea = TimestampOverlaySafeArea.Standard,
         val overlayOffsetXStep: Int = 0,
         val overlayOffsetYStep: Int = 0,
         val aspectRatioPreset: TimestampAspectRatioPreset = TimestampAspectRatioPreset.FourThree,
-        val cropZoomPreset: TimestampCropZoomPreset = TimestampCropZoomPreset.Fit,
-        val cropOffsetXStep: Int = 0,
-        val cropOffsetYStep: Int = 0,
+        val cropScale: Float = 1f,
+        val cropOffsetXRatio: Float = 0f,
+        val cropOffsetYRatio: Float = 0f,
     ) {
         val isExportEnabled: Boolean
             get() = hasSelectedPhoto && timestamp.isNotBlank()
@@ -46,9 +47,14 @@ object TimestampEditorContract {
         data class SafeAreaChanged(val value: TimestampOverlaySafeArea) : Intent
         data class OffsetXChanged(val value: Int) : Intent
         data class OffsetYChanged(val value: Int) : Intent
+        data object OpenCropEditor : Intent
+        data object CloseCropEditor : Intent
         data class AspectRatioChanged(val value: TimestampAspectRatioPreset) : Intent
-        data class CropZoomChanged(val value: TimestampCropZoomPreset) : Intent
-        data class CropOffsetXChanged(val value: Int) : Intent
-        data class CropOffsetYChanged(val value: Int) : Intent
+        data class CropGestureChanged(
+            val scaleDelta: Float,
+            val panDeltaXRatio: Float,
+            val panDeltaYRatio: Float,
+        ) : Intent
+        data object ResetCrop : Intent
     }
 }

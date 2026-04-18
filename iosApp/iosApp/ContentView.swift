@@ -110,9 +110,9 @@ private func renderTimestampedImage(
         let cgImage = image.cgImage,
         let cropPreset = iosCropPreset(
             aspectRatioKey: request.aspectRatioKey,
-            zoomKey: request.cropZoomKey,
-            offsetXStep: request.cropOffsetXStep,
-            offsetYStep: request.cropOffsetYStep,
+            cropScale: CGFloat(request.cropScale),
+            offsetXRatio: CGFloat(request.cropOffsetXRatio),
+            offsetYRatio: CGFloat(request.cropOffsetYRatio),
             width: CGFloat(cgImage.width),
             height: CGFloat(cgImage.height)
         ),
@@ -186,22 +186,14 @@ private func renderTimestampedImage(
 
 private func iosCropPreset(
     aspectRatioKey: String,
-    zoomKey: String,
-    offsetXStep: Int,
-    offsetYStep: Int,
+    cropScale: CGFloat,
+    offsetXRatio: CGFloat,
+    offsetYRatio: CGFloat,
     width: CGFloat,
     height: CGFloat
 ) -> (sourceRect: CGRect)? {
     let aspectRatio: CGFloat = aspectRatioKey == "16_9" ? (16 / 9) : (4 / 3)
-    let zoom: CGFloat
-    switch zoomKey {
-    case "close":
-        zoom = 1.15
-    case "closer":
-        zoom = 1.3
-    default:
-        zoom = 1
-    }
+    let zoom = min(max(cropScale, 1), 4)
 
     let baseCropWidth: CGFloat
     let baseCropHeight: CGFloat
@@ -217,8 +209,8 @@ private func iosCropPreset(
     let cropHeight = baseCropHeight / zoom
     let maxShiftX = max((width - cropWidth) / 2, 0)
     let maxShiftY = max((height - cropHeight) / 2, 0)
-    let centerX = width / 2 + (CGFloat(offsetXStep) / 3) * maxShiftX
-    let centerY = height / 2 + (CGFloat(offsetYStep) / 3) * maxShiftY
+    let centerX = width / 2 + min(max(offsetXRatio, -1), 1) * maxShiftX
+    let centerY = height / 2 + min(max(offsetYRatio, -1), 1) * maxShiftY
     let left = min(max(centerX - cropWidth / 2, 0), width - cropWidth)
     let top = min(max(centerY - cropHeight / 2, 0), height - cropHeight)
 

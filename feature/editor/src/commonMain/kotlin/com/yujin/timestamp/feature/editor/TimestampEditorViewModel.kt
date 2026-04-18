@@ -24,10 +24,19 @@ class TimestampEditorViewModel(
             is TimestampEditorContract.Intent.SafeAreaChanged -> state.copy(overlaySafeArea = intent.value)
             is TimestampEditorContract.Intent.OffsetXChanged -> state.copy(overlayOffsetXStep = intent.value.coerceIn(-3, 3))
             is TimestampEditorContract.Intent.OffsetYChanged -> state.copy(overlayOffsetYStep = intent.value.coerceIn(-3, 3))
+            TimestampEditorContract.Intent.OpenCropEditor -> state.copy(isCropEditorVisible = true)
+            TimestampEditorContract.Intent.CloseCropEditor -> state.copy(isCropEditorVisible = false)
             is TimestampEditorContract.Intent.AspectRatioChanged -> state.copy(aspectRatioPreset = intent.value)
-            is TimestampEditorContract.Intent.CropZoomChanged -> state.copy(cropZoomPreset = intent.value)
-            is TimestampEditorContract.Intent.CropOffsetXChanged -> state.copy(cropOffsetXStep = intent.value.coerceIn(-3, 3))
-            is TimestampEditorContract.Intent.CropOffsetYChanged -> state.copy(cropOffsetYStep = intent.value.coerceIn(-3, 3))
+            is TimestampEditorContract.Intent.CropGestureChanged -> state.copy(
+                cropScale = (state.cropScale * intent.scaleDelta).coerceIn(1f, 4f),
+                cropOffsetXRatio = (state.cropOffsetXRatio + intent.panDeltaXRatio).coerceIn(-1f, 1f),
+                cropOffsetYRatio = (state.cropOffsetYRatio + intent.panDeltaYRatio).coerceIn(-1f, 1f),
+            )
+            TimestampEditorContract.Intent.ResetCrop -> state.copy(
+                cropScale = 1f,
+                cropOffsetXRatio = 0f,
+                cropOffsetYRatio = 0f,
+            )
         }
     }
 
@@ -49,9 +58,9 @@ class TimestampEditorViewModel(
             offsetXStep = state.overlayOffsetXStep,
             offsetYStep = state.overlayOffsetYStep,
             aspectRatioKey = state.aspectRatioPreset.exportKey,
-            cropZoomKey = state.cropZoomPreset.exportKey,
-            cropOffsetXStep = state.cropOffsetXStep,
-            cropOffsetYStep = state.cropOffsetYStep,
+            cropScale = state.cropScale,
+            cropOffsetXRatio = state.cropOffsetXRatio,
+            cropOffsetYRatio = state.cropOffsetYRatio,
         )
     }
 
