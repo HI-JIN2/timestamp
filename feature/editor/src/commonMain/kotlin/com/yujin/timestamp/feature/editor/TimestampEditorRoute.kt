@@ -24,6 +24,12 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
@@ -59,6 +65,7 @@ fun TimestampEditorRoute(
     exportMessage: String? = null,
     onPickPhoto: () -> Unit = {},
     onExport: (TimestampExportRequest) -> Unit = {},
+    onExportMessageConsumed: () -> Unit = {},
 ) {
     val previewImage = remember(selectedImageBase64) {
         selectedImageBase64?.let(::decodeSelectedImage)
@@ -85,6 +92,7 @@ fun TimestampEditorRoute(
         onIntent = viewModel::dispatch,
         onPickPhoto = onPickPhoto,
         onExport = { viewModel.buildExportRequest()?.let(onExport) },
+        onExportMessageConsumed = onExportMessageConsumed,
     )
 }
 
@@ -94,27 +102,62 @@ private fun TimestampEditorScreen(
     onIntent: (TimestampEditorContract.Intent) -> Unit,
     onPickPhoto: () -> Unit,
     onExport: () -> Unit,
+    onExportMessageConsumed: () -> Unit,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(state.exportMessage) {
+        val message = state.exportMessage ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(
+            message = message,
+            duration = SnackbarDuration.Short,
+        )
+        onExportMessageConsumed()
+    }
+
     MaterialTheme(colorScheme = retroColorScheme()) {
-        Surface(
+        Scaffold(
             modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background,
-        ) {
-            if (state.isCropEditorVisible && state.previewImage != null) {
-                CropEditorScreen(
-                    state = state,
-                    onIntent = onIntent,
-                )
-            } else {
-                EditorHomeScreen(
-                    state = state,
-                    onIntent = onIntent,
-                    onPickPhoto = onPickPhoto,
-                    onExport = onExport,
-                )
+            containerColor = MaterialTheme.colorScheme.background,
+            snackbarHost = {
+                SnackbarHost(hostState = snackbarHostState) { data ->
+                    TimestampSnackbar(data)
+                }
+            },
+        ) { innerPadding ->
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                color = MaterialTheme.colorScheme.background,
+            ) {
+                if (state.isCropEditorVisible && state.previewImage != null) {
+                    CropEditorScreen(
+                        state = state,
+                        onIntent = onIntent,
+                    )
+                } else {
+                    EditorHomeScreen(
+                        state = state,
+                        onIntent = onIntent,
+                        onPickPhoto = onPickPhoto,
+                        onExport = onExport,
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+private fun TimestampSnackbar(data: SnackbarData) {
+    Snackbar(
+        snackbarData = data,
+        containerColor = Color.Black,
+        contentColor = Color.White,
+        actionColor = Color.White,
+        dismissActionContentColor = Color.White,
+    )
 }
 
 @Composable
@@ -337,9 +380,6 @@ private fun PreviewCard(
             }
 
             Text(state.helperText, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
-            if (state.exportMessage != null) {
-                Text(state.exportMessage, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyMedium)
-            }
 
             OutlinedTextField(
                 value = state.timestamp,

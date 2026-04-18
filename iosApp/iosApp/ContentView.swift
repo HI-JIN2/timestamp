@@ -19,7 +19,8 @@ struct ContentView: View {
             onPickPhotoRequest: { isPhotoPickerPresented = true },
             onExportRequest: { request in
                 exportMessage = exportTimestampedImage(request)
-            }
+            },
+            onExportMessageConsumed: { exportMessage = nil }
         )
             .id("\(selectedImageBase64 ?? "empty")-\(exportMessage ?? "")")
             .ignoresSafeArea(.keyboard)
@@ -46,6 +47,7 @@ private struct ComposeView: UIViewControllerRepresentable {
     let exportMessage: String?
     let onPickPhotoRequest: () -> Void
     let onExportRequest: (TimestampExportRequest) -> Void
+    let onExportMessageConsumed: () -> Void
 
     func makeUIViewController(context: Context) -> UIViewController {
         MainViewControllerKt.MainViewController(
@@ -53,7 +55,8 @@ private struct ComposeView: UIViewControllerRepresentable {
             metadataTimestampLabel: metadataTimestampLabel,
             exportMessage: exportMessage,
             onPickPhoto: onPickPhotoRequest,
-            onExport: onExportRequest
+            onExport: onExportRequest,
+            onExportMessageConsumed: onExportMessageConsumed
         )
     }
 

@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
                 selectedImageBase64 = selectedImagePayload?.base64,
                 metadataTimestampLabel = metadataTimestampLabel,
                 exportMessage = exportMessage,
+                onExportMessageConsumed = { exportMessage = null },
                 onPickPhoto = {
                     imagePicker.launch(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),

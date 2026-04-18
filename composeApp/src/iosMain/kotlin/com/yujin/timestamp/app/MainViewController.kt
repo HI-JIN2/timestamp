@@ -11,6 +11,7 @@ fun MainViewController(
     exportMessage: String? = null,
     onPickPhoto: () -> Unit = {},
     onExport: (TimestampExportRequest) -> Unit = {},
+    onExportMessageConsumed: () -> Unit = {},
 ): UIViewController = ComposeUIViewController {
     TimestampEditorRoute(
         selectedImageBase64 = selectedImageBase64,
@@ -18,5 +19,6 @@ fun MainViewController(
         exportMessage = exportMessage,
         onPickPhoto = onPickPhoto,
         onExport = onExport,
+        onExportMessageConsumed = onExportMessageConsumed,
     )
 }
