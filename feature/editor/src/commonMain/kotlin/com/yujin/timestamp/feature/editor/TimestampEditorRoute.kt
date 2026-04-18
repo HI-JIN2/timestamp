@@ -18,15 +18,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.RectangleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -203,19 +204,27 @@ private fun EditorHomeScreen(
             text = "Timestamp",
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.5).sp,
+                letterSpacing = 1.2.sp,
             ),
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            IconButton(onClick = onPickPhoto) {
+            Button(
+                onClick = onPickPhoto,
+                shape = RectangleShape,
+                colors = retroActionButtonColors(),
+                contentPadding = ButtonDefaults.ContentPadding,
+            ) {
                 Icon(
                     imageVector = Icons.Rounded.PhotoLibrary,
                     contentDescription = if (state.hasSelectedPhoto) "사진 다시 선택" else "사진 선택",
                 )
             }
-            IconButton(
+            Button(
                 onClick = { onIntent(TimestampEditorContract.Intent.OpenCropEditor) },
                 enabled = state.hasSelectedPhoto,
+                shape = RectangleShape,
+                colors = retroActionButtonColors(),
+                contentPadding = ButtonDefaults.ContentPadding,
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Crop,
@@ -256,10 +265,18 @@ private fun CropEditorScreen(
                 fontWeight = FontWeight.Bold,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { onIntent(TimestampEditorContract.Intent.ResetCrop) }) {
+                Button(
+                    onClick = { onIntent(TimestampEditorContract.Intent.ResetCrop) },
+                    shape = RectangleShape,
+                    colors = retroActionButtonColors(),
+                ) {
                     Text("초기화")
                 }
-                Button(onClick = { onIntent(TimestampEditorContract.Intent.CloseCropEditor) }) {
+                Button(
+                    onClick = { onIntent(TimestampEditorContract.Intent.CloseCropEditor) },
+                    shape = RectangleShape,
+                    colors = retroActionButtonColors(),
+                ) {
                     Text("완료")
                 }
             }
@@ -549,7 +566,8 @@ private fun PreviewCard(
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(28.dp),
+        shape = RectangleShape,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Column(
             modifier = Modifier
@@ -597,6 +615,8 @@ private fun PreviewCard(
                 onClick = { onEditTimestampRequest(state.timestamp) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = state.hasSelectedPhoto,
+                shape = RectangleShape,
+                colors = retroActionButtonColors(),
             ) {
                 Text(state.timestamp)
             }
@@ -610,8 +630,15 @@ private fun PreviewCard(
                 Button(
                     onClick = { onIntent(TimestampEditorContract.Intent.ResetTimestamp) },
                     enabled = state.hasSelectedPhoto,
+                    shape = RectangleShape,
+                    colors = retroActionButtonColors(),
                 ) { Text("기본값 복원") }
-                Button(onClick = onExport, enabled = state.isExportEnabled) { Text("내보내기") }
+                Button(
+                    onClick = onExport,
+                    enabled = state.isExportEnabled,
+                    shape = RectangleShape,
+                    colors = retroActionButtonColors(),
+                ) { Text("내보내기") }
             }
         }
     }
@@ -701,12 +728,27 @@ private fun <T> OverlayControlRow(
                 FilterChip(
                     selected = option == selected,
                     onClick = { onSelected(option) },
+                    shape = RectangleShape,
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        labelColor = MaterialTheme.colorScheme.onSurface,
+                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
                     label = { Text(optionLabel(option)) },
                 )
             }
         }
     }
 }
+
+@Composable
+private fun retroActionButtonColors() = ButtonDefaults.buttonColors(
+    containerColor = MaterialTheme.colorScheme.surface,
+    contentColor = MaterialTheme.colorScheme.onSurface,
+    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+)
 
 private fun overlayTextStyle(
     shadowColor: Color,
