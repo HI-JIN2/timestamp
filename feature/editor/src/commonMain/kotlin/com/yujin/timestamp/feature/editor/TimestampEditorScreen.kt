@@ -22,7 +22,8 @@ internal fun TimestampEditorScreen(
     state: TimestampEditorUiContract.State,
     onIntent: (TimestampEditorUiContract.Intent) -> Unit,
     onPickPhoto: () -> Unit,
-    onEditTimestampRequest: (String) -> Unit,
+    onEditDateRequest: (String) -> Unit,
+    onEditTimeRequest: (String) -> Unit,
     onExport: () -> Unit,
     onExportMessageConsumed: () -> Unit,
 ) {
@@ -66,7 +67,8 @@ internal fun TimestampEditorScreen(
                         state = state,
                         onIntent = onIntent,
                         onPickPhoto = onPickPhoto,
-                        onEditTimestampRequest = onEditTimestampRequest,
+                        onEditDateRequest = onEditDateRequest,
+                        onEditTimeRequest = onEditTimeRequest,
                         onExport = onExport,
                         palette = editorPalette,
                     )

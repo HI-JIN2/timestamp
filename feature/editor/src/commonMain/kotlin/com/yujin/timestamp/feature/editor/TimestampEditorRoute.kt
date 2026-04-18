@@ -15,7 +15,8 @@ fun TimestampEditorRoute(
     selectedTimestampLabel: String? = null,
     exportMessage: String? = null,
     onPickPhoto: () -> Unit = {},
-    onEditTimestampRequest: (String) -> Unit = {},
+    onEditDateRequest: (String) -> Unit = {},
+    onEditTimeRequest: (String) -> Unit = {},
     onExport: (TimestampExportRequest) -> Unit = {},
     onExportMessageConsumed: () -> Unit = {},
 ) {
@@ -44,7 +45,8 @@ fun TimestampEditorRoute(
         state = state,
         onIntent = viewModel::dispatch,
         onPickPhoto = onPickPhoto,
-        onEditTimestampRequest = onEditTimestampRequest,
+        onEditDateRequest = onEditDateRequest,
+        onEditTimeRequest = onEditTimeRequest,
         onExport = { viewModel.buildExportRequest()?.let(onExport) },
         onExportMessageConsumed = onExportMessageConsumed,
     )

@@ -29,7 +29,8 @@ internal fun EditorHomeSection(
     state: TimestampEditorUiContract.State,
     onIntent: (TimestampEditorUiContract.Intent) -> Unit,
     onPickPhoto: () -> Unit,
-    onEditTimestampRequest: (String) -> Unit,
+    onEditDateRequest: (String) -> Unit,
+    onEditTimeRequest: (String) -> Unit,
     onExport: () -> Unit,
     palette: EditorPalette,
 ) {
@@ -55,7 +56,8 @@ internal fun EditorHomeSection(
         PreviewPanel(
             state = state,
             onIntent = onIntent,
-            onEditTimestampRequest = onEditTimestampRequest,
+            onEditDateRequest = onEditDateRequest,
+            onEditTimeRequest = onEditTimeRequest,
             onExport = onExport,
             palette = palette,
         )

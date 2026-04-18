@@ -5,8 +5,14 @@ import UIKit
 import ComposeApp
 
 struct ContentView: View {
+    private enum TimestampPickerMode {
+        case dateTime
+        case timeOnly
+    }
+
     @State private var isPhotoPickerPresented = false
     @State private var isTimestampPickerPresented = false
+    @State private var timestampPickerMode: TimestampPickerMode = .dateTime
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var selectedImageBase64: String?
     @State private var metadataTimestampLabel: String?
@@ -21,8 +27,14 @@ struct ContentView: View {
             selectedTimestampLabel: selectedTimestampLabel,
             exportMessage: exportMessage,
             onPickPhotoRequest: { isPhotoPickerPresented = true },
-            onEditTimestampRequest: { currentTimestamp in
+            onEditDateRequest: { currentTimestamp in
                 pendingTimestampDate = parseTimestampLabel(currentTimestamp) ?? Date()
+                timestampPickerMode = .dateTime
+                isTimestampPickerPresented = true
+            },
+            onEditTimeRequest: { currentTimestamp in
+                pendingTimestampDate = parseTimestampLabel(currentTimestamp) ?? Date()
+                timestampPickerMode = .timeOnly
                 isTimestampPickerPresented = true
             },
             onExportRequest: { request in
@@ -40,13 +52,23 @@ struct ContentView: View {
             .sheet(isPresented: $isTimestampPickerPresented) {
                 NavigationStack {
                     VStack {
-                        DatePicker(
-                            "",
-                            selection: $pendingTimestampDate,
-                            displayedComponents: [.date, .hourAndMinute]
-                        )
-                        .datePickerStyle(.graphical)
-                        .labelsHidden()
+                        if timestampPickerMode == .dateTime {
+                            DatePicker(
+                                "",
+                                selection: $pendingTimestampDate,
+                                displayedComponents: [.date, .hourAndMinute]
+                            )
+                            .datePickerStyle(.graphical)
+                            .labelsHidden()
+                        } else {
+                            DatePicker(
+                                "",
+                                selection: $pendingTimestampDate,
+                                displayedComponents: [.hourAndMinute]
+                            )
+                            .datePickerStyle(.wheel)
+                            .labelsHidden()
+                        }
                     }
                     .padding()
                     .toolbar {
@@ -84,7 +106,8 @@ private struct ComposeView: UIViewControllerRepresentable {
     let selectedTimestampLabel: String?
     let exportMessage: String?
     let onPickPhotoRequest: () -> Void
-    let onEditTimestampRequest: (String) -> Void
+    let onEditDateRequest: (String) -> Void
+    let onEditTimeRequest: (String) -> Void
     let onExportRequest: (TimestampExportRequest) -> Void
     let onExportMessageConsumed: () -> Void
 
@@ -95,7 +118,8 @@ private struct ComposeView: UIViewControllerRepresentable {
             selectedTimestampLabel: selectedTimestampLabel,
             exportMessage: exportMessage,
             onPickPhoto: onPickPhotoRequest,
-            onEditTimestampRequest: onEditTimestampRequest,
+            onEditDateRequest: onEditDateRequest,
+            onEditTimeRequest: onEditTimeRequest,
             onExport: onExportRequest,
             onExportMessageConsumed: onExportMessageConsumed
         )

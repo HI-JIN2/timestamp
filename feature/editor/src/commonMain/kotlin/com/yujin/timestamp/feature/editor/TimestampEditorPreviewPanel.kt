@@ -42,7 +42,8 @@ import timestamp.feature.editor.generated.resources.*
 internal fun PreviewPanel(
     state: TimestampEditorUiContract.State,
     onIntent: (TimestampEditorUiContract.Intent) -> Unit,
-    onEditTimestampRequest: (String) -> Unit,
+    onEditDateRequest: (String) -> Unit,
+    onEditTimeRequest: (String) -> Unit,
     onExport: () -> Unit,
     palette: EditorPalette,
 ) {
@@ -62,15 +63,12 @@ internal fun PreviewPanel(
                 palette = palette,
             )
 
-            Button(
-                onClick = { onEditTimestampRequest(state.timestamp) },
-                modifier = Modifier.fillMaxWidth(),
+            TimestampFieldRow(
+                timestamp = state.timestamp,
                 enabled = state.hasSelectedPhoto,
-                shape = RectangleShape,
-                colors = retroActionButtonColors(),
-            ) {
-                Text(state.timestamp)
-            }
+                onEditDateRequest = onEditDateRequest,
+                onEditTimeRequest = onEditTimeRequest,
+            )
 
             OverlayControlRow(
                 label = stringResource(Res.string.overlay_tone),
@@ -87,6 +85,41 @@ internal fun PreviewPanel(
                 onResetTimestamp = { onIntent(TimestampEditorUiContract.Intent.ResetTimestamp) },
                 onExport = onExport,
             )
+        }
+    }
+}
+
+@Composable
+private fun TimestampFieldRow(
+    timestamp: String,
+    enabled: Boolean,
+    onEditDateRequest: (String) -> Unit,
+    onEditTimeRequest: (String) -> Unit,
+) {
+    val datePart = timestamp.substringBefore("  ", timestamp)
+    val timePart = timestamp.substringAfter("  ", "")
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Button(
+            onClick = { onEditDateRequest(timestamp) },
+            modifier = Modifier.weight(1f),
+            enabled = enabled,
+            shape = RectangleShape,
+            colors = retroActionButtonColors(),
+        ) {
+            Text(datePart)
+        }
+        Button(
+            onClick = { onEditTimeRequest(timestamp) },
+            modifier = Modifier.weight(1f),
+            enabled = enabled,
+            shape = RectangleShape,
+            colors = retroActionButtonColors(),
+        ) {
+            Text(timePart)
         }
     }
 }

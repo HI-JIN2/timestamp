@@ -59,8 +59,11 @@ class MainActivity : ComponentActivity() {
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
                     )
                 },
-                onEditTimestampRequest = { currentTimestamp ->
-                    showTimestampPicker(currentTimestamp) { selectedTimestampLabel = it }
+                onEditDateRequest = { currentTimestamp ->
+                    showDateThenTimePicker(currentTimestamp) { selectedTimestampLabel = it }
+                },
+                onEditTimeRequest = { currentTimestamp ->
+                    showTimePicker(currentTimestamp) { selectedTimestampLabel = it }
                 },
                 onExport = { request ->
                     exportMessage = exportTimestampedImage(request)
@@ -199,7 +202,7 @@ class MainActivity : ComponentActivity() {
         return mutableBitmap
     }
 
-    private fun showTimestampPicker(
+    private fun showDateThenTimePicker(
         currentTimestamp: String,
         onSelected: (String) -> Unit,
     ) {
@@ -223,6 +226,27 @@ class MainActivity : ComponentActivity() {
             initialDateTime.year,
             initialDateTime.monthValue - 1,
             initialDateTime.dayOfMonth,
+        ).show()
+    }
+
+    private fun showTimePicker(
+        currentTimestamp: String,
+        onSelected: (String) -> Unit,
+    ) {
+        val initialDateTime = currentTimestamp.toTimestampDateTime()
+        TimePickerDialog(
+            this,
+            { _, hourOfDay, minute ->
+                onSelected(
+                    initialDateTime
+                        .withHour(hourOfDay)
+                        .withMinute(minute)
+                        .format(TIMESTAMP_FORMATTER),
+                )
+            },
+            initialDateTime.hour,
+            initialDateTime.minute,
+            true,
         ).show()
     }
 
