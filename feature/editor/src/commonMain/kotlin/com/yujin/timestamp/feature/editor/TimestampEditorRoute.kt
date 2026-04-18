@@ -25,6 +25,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -36,6 +38,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Crop
+import androidx.compose.material.icons.rounded.PhotoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -201,15 +206,21 @@ private fun EditorHomeScreen(
                 letterSpacing = (-0.5).sp,
             ),
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(onClick = onPickPhoto) {
-                Text(if (state.hasSelectedPhoto) "사진 다시 선택" else "사진 선택")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            IconButton(onClick = onPickPhoto) {
+                Icon(
+                    imageVector = Icons.Rounded.PhotoLibrary,
+                    contentDescription = if (state.hasSelectedPhoto) "사진 다시 선택" else "사진 선택",
+                )
             }
-            Button(
+            IconButton(
                 onClick = { onIntent(TimestampEditorContract.Intent.OpenCropEditor) },
                 enabled = state.hasSelectedPhoto,
             ) {
-                Text("크롭 편집")
+                Icon(
+                    imageVector = Icons.Rounded.Crop,
+                    contentDescription = "크롭 편집",
+                )
             }
         }
         PreviewCard(
