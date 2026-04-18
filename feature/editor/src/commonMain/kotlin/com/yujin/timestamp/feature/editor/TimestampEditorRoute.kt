@@ -115,7 +115,7 @@ fun TimestampEditorRoute(
 }
 
 @Composable
-private fun TimestampEditorScreen(
+internal fun TimestampEditorScreen(
     state: TimestampEditorContract.State,
     onIntent: (TimestampEditorContract.Intent) -> Unit,
     onPickPhoto: () -> Unit,
