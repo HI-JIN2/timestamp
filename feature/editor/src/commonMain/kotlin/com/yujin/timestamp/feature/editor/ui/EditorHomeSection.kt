@@ -1,4 +1,4 @@
-package com.yujin.timestamp.feature.editor
+package com.yujin.timestamp.feature.editor.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.yujin.timestamp.feature.editor.EditorUiContract
 import org.jetbrains.compose.resources.stringResource
 import timestamp.feature.editor.generated.resources.*
 

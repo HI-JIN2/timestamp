@@ -1,4 +1,4 @@
-package com.yujin.timestamp.feature.editor
+package com.yujin.timestamp.feature.editor.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -35,6 +35,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.yujin.timestamp.feature.editor.EditorUiContract
+import com.yujin.timestamp.feature.editor.OverlayAlignment
+import com.yujin.timestamp.feature.editor.OverlayInset
+import com.yujin.timestamp.feature.editor.OverlaySafeArea
+import com.yujin.timestamp.feature.editor.OverlayScale
+import com.yujin.timestamp.feature.editor.OverlayTone
 import org.jetbrains.compose.resources.stringResource
 import timestamp.feature.editor.generated.resources.*
 

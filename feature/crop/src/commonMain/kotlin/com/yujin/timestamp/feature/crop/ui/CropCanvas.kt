@@ -1,4 +1,4 @@
-package com.yujin.timestamp.feature.crop
+package com.yujin.timestamp.feature.crop.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image

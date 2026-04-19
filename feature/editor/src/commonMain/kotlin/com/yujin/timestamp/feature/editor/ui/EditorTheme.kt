@@ -1,4 +1,4 @@
-package com.yujin.timestamp.feature.editor
+package com.yujin.timestamp.feature.editor.ui
 
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme

@@ -1,4 +1,4 @@
-package com.yujin.timestamp.feature.editor
+package com.yujin.timestamp.feature.crop.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,7 +16,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun <T> OverlayControlRow(
+internal fun <T> CropControlRow(
     label: String,
     options: List<T>,
     selected: T,
