@@ -9,7 +9,7 @@ import com.yujin.timestamp.core.model.TimestampExportRequest
 import com.yujin.timestamp.domain.editor.GetEditorInitialStateUseCase
 
 @Composable
-fun TimestampEditorRoute(
+fun EditorRoute(
     selectedImageBase64: String? = null,
     metadataTimestampLabel: String? = null,
     selectedTimestampLabel: String? = null,
@@ -24,12 +24,12 @@ fun TimestampEditorRoute(
         selectedImageBase64?.let(::decodeSelectedImage)
     }
     val viewModel = remember {
-        TimestampEditorViewModel(GetEditorInitialStateUseCase())
+        EditorViewModel(GetEditorInitialStateUseCase())
     }
 
     LaunchedEffect(selectedImageBase64, metadataTimestampLabel, selectedTimestampLabel, exportMessage, previewImage) {
         viewModel.dispatch(
-            TimestampEditorUiContract.Action.SyncExternal(
+            EditorUiContract.Action.SyncExternal(
                 selectedImageBase64 = selectedImageBase64,
                 previewImage = previewImage,
                 metadataTimestampLabel = metadataTimestampLabel,
@@ -40,7 +40,7 @@ fun TimestampEditorRoute(
     }
 
     val state by remember { derivedStateOf { viewModel.state } }
-    val actions: (TimestampEditorUiContract.Action) -> Unit = remember(
+    val actions: (EditorUiContract.Action) -> Unit = remember(
         viewModel,
         state,
         onPickPhoto,
@@ -51,19 +51,19 @@ fun TimestampEditorRoute(
     ) {
         { action ->
             when (action) {
-                TimestampEditorUiContract.Action.PickPhoto -> onPickPhoto()
-                is TimestampEditorUiContract.Action.EditDateRequested -> onEditDateRequest(action.value)
-                is TimestampEditorUiContract.Action.EditTimeRequested -> onEditTimeRequest(action.value)
-                TimestampEditorUiContract.Action.Export -> {
+                EditorUiContract.Action.PickPhoto -> onPickPhoto()
+                is EditorUiContract.Action.EditDateRequested -> onEditDateRequest(action.value)
+                is EditorUiContract.Action.EditTimeRequested -> onEditTimeRequest(action.value)
+                EditorUiContract.Action.Export -> {
                     viewModel.buildExportRequest()?.let(onExport)
                 }
-                TimestampEditorUiContract.Action.ExportMessageShown -> onExportMessageConsumed()
+                EditorUiContract.Action.ExportMessageShown -> onExportMessageConsumed()
                 else -> viewModel.dispatch(action)
             }
         }
     }
 
-    TimestampEditorScreen(
+    EditorScreen(
         state = state,
         actions = actions,
     )

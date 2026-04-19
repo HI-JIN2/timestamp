@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 import org.jetbrains.compose.resources.StringResource
 import timestamp.feature.editor.generated.resources.*
 
-enum class TimestampOverlayTone(
+enum class OverlayTone(
     val labelRes: StringResource,
     val timestampColor: Color,
     val locationColor: Color,
@@ -43,7 +43,7 @@ enum class TimestampOverlayTone(
     ),
 }
 
-enum class TimestampOverlayAlignment(
+enum class OverlayAlignment(
     val labelRes: StringResource,
     val containerAlignment: Alignment,
     val exportKey: String,
@@ -52,7 +52,7 @@ enum class TimestampOverlayAlignment(
     BottomEnd(Res.string.overlay_alignment_bottom_end, Alignment.BottomEnd, "bottom_end"),
 }
 
-enum class TimestampOverlayScale(
+enum class OverlayScale(
     val labelRes: StringResource,
     val timestampFontSp: Int,
     val locationFontSp: Int,
@@ -63,7 +63,7 @@ enum class TimestampOverlayScale(
     Large(Res.string.overlay_scale_large, 32, 16, "large"),
 }
 
-enum class TimestampOverlayInset(
+enum class OverlayInset(
     val labelRes: StringResource,
     val previewPaddingDp: Int,
     val exportKey: String,
@@ -73,7 +73,7 @@ enum class TimestampOverlayInset(
     Spacious(Res.string.overlay_inset_spacious, 24, "spacious"),
 }
 
-enum class TimestampOverlaySafeArea(
+enum class OverlaySafeArea(
     val labelRes: StringResource,
     val extraPreviewBottomDp: Int,
     val exportExtraBottomRatio: Float,

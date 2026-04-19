@@ -26,7 +26,7 @@ import androidx.compose.runtime.setValue
 import com.yujin.timestamp.R
 import com.yujin.timestamp.core.model.TimestampExportRequest
 import com.yujin.timestamp.core.model.TimestampImagePayload
-import com.yujin.timestamp.feature.editor.TimestampEditorRoute
+import com.yujin.timestamp.feature.editor.EditorRoute
 import java.io.OutputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
                 exportMessage = null
             }
 
-            TimestampEditorRoute(
+            EditorRoute(
                 selectedImageBase64 = selectedImagePayload?.base64,
                 metadataTimestampLabel = metadataTimestampLabel,
                 selectedTimestampLabel = selectedTimestampLabel,

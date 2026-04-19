@@ -7,20 +7,20 @@ import com.yujin.timestamp.core.model.TimestampExportRequest
 import com.yujin.timestamp.domain.editor.GetEditorInitialStateUseCase
 import com.yujin.timestamp.feature.crop.defaultCropRect
 
-class TimestampEditorViewModel(
+class EditorViewModel(
     private val getEditorInitialState: GetEditorInitialStateUseCase,
 ) {
-    var state by mutableStateOf(TimestampEditorUiContract.State())
+    var state by mutableStateOf(EditorUiContract.State())
         private set
 
-    fun dispatch(intent: TimestampEditorUiContract.Action) {
+    fun dispatch(intent: EditorUiContract.Action) {
         state = when (intent) {
-            is TimestampEditorUiContract.Action.SyncExternal -> reduceExternal(intent)
-            TimestampEditorUiContract.Action.ResetTimestamp -> state.copy(timestamp = state.defaultTimestamp)
-            is TimestampEditorUiContract.Action.ToneChanged -> state.copy(overlayTone = intent.value)
-            TimestampEditorUiContract.Action.OpenCropEditor -> state.copy(isCropEditorVisible = true)
-            TimestampEditorUiContract.Action.CloseCropEditor -> state.copy(isCropEditorVisible = false)
-            is TimestampEditorUiContract.Action.AspectRatioChanged -> {
+            is EditorUiContract.Action.SyncExternal -> reduceExternal(intent)
+            EditorUiContract.Action.ResetTimestamp -> state.copy(timestamp = state.defaultTimestamp)
+            is EditorUiContract.Action.ToneChanged -> state.copy(overlayTone = intent.value)
+            EditorUiContract.Action.OpenCropEditor -> state.copy(isCropEditorVisible = true)
+            EditorUiContract.Action.CloseCropEditor -> state.copy(isCropEditorVisible = false)
+            is EditorUiContract.Action.AspectRatioChanged -> {
                 val cropRect = defaultCropRect(
                     previewImage = state.previewImage,
                     aspectRatio = intent.value,
@@ -33,18 +33,18 @@ class TimestampEditorViewModel(
                     cropHeightRatio = cropRect.heightRatio,
                 )
             }
-            is TimestampEditorUiContract.Action.CropRectChanged -> state.copy(
+            is EditorUiContract.Action.CropRectChanged -> state.copy(
                 cropLeftRatio = intent.leftRatio,
                 cropTopRatio = intent.topRatio,
                 cropWidthRatio = intent.widthRatio,
                 cropHeightRatio = intent.heightRatio,
             )
-            TimestampEditorUiContract.Action.ResetCrop -> resetCrop()
-            TimestampEditorUiContract.Action.PickPhoto,
-            is TimestampEditorUiContract.Action.EditDateRequested,
-            is TimestampEditorUiContract.Action.EditTimeRequested,
-            TimestampEditorUiContract.Action.Export,
-            TimestampEditorUiContract.Action.ExportMessageShown -> state
+            EditorUiContract.Action.ResetCrop -> resetCrop()
+            EditorUiContract.Action.PickPhoto,
+            is EditorUiContract.Action.EditDateRequested,
+            is EditorUiContract.Action.EditTimeRequested,
+            EditorUiContract.Action.Export,
+            EditorUiContract.Action.ExportMessageShown -> state
         }
     }
 
@@ -74,8 +74,8 @@ class TimestampEditorViewModel(
     }
 
     private fun reduceExternal(
-        intent: TimestampEditorUiContract.Action.SyncExternal,
-    ): TimestampEditorUiContract.State {
+        intent: EditorUiContract.Action.SyncExternal,
+    ): EditorUiContract.State {
         val hasSelectedPhoto = intent.previewImage != null || intent.selectedImageBase64 != null
         val initialState = getEditorInitialState(
             metadataTimestampLabel = intent.metadataTimestampLabel,
@@ -107,7 +107,7 @@ class TimestampEditorViewModel(
         )
     }
 
-    private fun resetCrop(): TimestampEditorUiContract.State {
+    private fun resetCrop(): EditorUiContract.State {
         val cropRect = defaultCropRect(
             previewImage = state.previewImage,
             aspectRatio = state.aspectRatioPreset,

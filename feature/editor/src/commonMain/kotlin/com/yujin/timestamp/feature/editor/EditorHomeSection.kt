@@ -26,8 +26,8 @@ import timestamp.feature.editor.generated.resources.*
 
 @Composable
 internal fun EditorHomeSection(
-    state: TimestampEditorUiContract.State,
-    actions: (TimestampEditorUiContract.Action) -> Unit,
+    state: EditorUiContract.State,
+    actions: (EditorUiContract.Action) -> Unit,
     palette: EditorPalette,
 ) {
     Column(
@@ -46,8 +46,8 @@ internal fun EditorHomeSection(
         )
         HomeActionRow(
             hasSelectedPhoto = state.hasSelectedPhoto,
-            onPickPhoto = { actions(TimestampEditorUiContract.Action.PickPhoto) },
-            onOpenCropEditor = { actions(TimestampEditorUiContract.Action.OpenCropEditor) },
+            onPickPhoto = { actions(EditorUiContract.Action.PickPhoto) },
+            onOpenCropEditor = { actions(EditorUiContract.Action.OpenCropEditor) },
         )
         PreviewPanel(
             state = state,

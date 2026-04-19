@@ -20,9 +20,9 @@ import com.yujin.timestamp.feature.crop.CropRoute
 import com.yujin.timestamp.feature.crop.CropUiContract
 
 @Composable
-internal fun TimestampEditorScreen(
-    state: TimestampEditorUiContract.State,
-    actions: (TimestampEditorUiContract.Action) -> Unit,
+internal fun EditorScreen(
+    state: EditorUiContract.State,
+    actions: (EditorUiContract.Action) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -35,10 +35,10 @@ internal fun TimestampEditorScreen(
             message = message,
             duration = SnackbarDuration.Short,
         )
-        actions(TimestampEditorUiContract.Action.ExportMessageShown)
+        actions(EditorUiContract.Action.ExportMessageShown)
     }
 
-    MaterialTheme(colorScheme = timestampColorScheme(isDarkTheme)) {
+    MaterialTheme(colorScheme = editorColorScheme(isDarkTheme)) {
         Scaffold(
             modifier = modifier.fillMaxSize(),
             containerColor = MaterialTheme.colorScheme.background,
@@ -67,11 +67,11 @@ internal fun TimestampEditorScreen(
                         actions = { cropAction ->
                             when (cropAction) {
                                 is CropUiContract.Action.AspectRatioChanged -> {
-                                    actions(TimestampEditorUiContract.Action.AspectRatioChanged(cropAction.value))
+                                    actions(EditorUiContract.Action.AspectRatioChanged(cropAction.value))
                                 }
                                 is CropUiContract.Action.CropRectChanged -> {
                                     actions(
-                                        TimestampEditorUiContract.Action.CropRectChanged(
+                                        EditorUiContract.Action.CropRectChanged(
                                             leftRatio = cropAction.leftRatio,
                                             topRatio = cropAction.topRatio,
                                             widthRatio = cropAction.widthRatio,
@@ -80,10 +80,10 @@ internal fun TimestampEditorScreen(
                                     )
                                 }
                                 CropUiContract.Action.Reset -> {
-                                    actions(TimestampEditorUiContract.Action.ResetCrop)
+                                    actions(EditorUiContract.Action.ResetCrop)
                                 }
                                 CropUiContract.Action.Done -> {
-                                    actions(TimestampEditorUiContract.Action.CloseCropEditor)
+                                    actions(EditorUiContract.Action.CloseCropEditor)
                                 }
                             }
                         },

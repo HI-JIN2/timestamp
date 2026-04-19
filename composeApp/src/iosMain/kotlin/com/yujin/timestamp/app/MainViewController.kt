@@ -2,7 +2,7 @@ package com.yujin.timestamp.app
 
 import androidx.compose.ui.window.ComposeUIViewController
 import com.yujin.timestamp.core.model.TimestampExportRequest
-import com.yujin.timestamp.feature.editor.TimestampEditorRoute
+import com.yujin.timestamp.feature.editor.EditorRoute
 import platform.UIKit.UIViewController
 
 fun MainViewController(
@@ -16,7 +16,7 @@ fun MainViewController(
     onExport: (TimestampExportRequest) -> Unit = {},
     onExportMessageConsumed: () -> Unit = {},
 ): UIViewController = ComposeUIViewController {
-    TimestampEditorRoute(
+    EditorRoute(
         selectedImageBase64 = selectedImageBase64,
         metadataTimestampLabel = metadataTimestampLabel,
         selectedTimestampLabel = selectedTimestampLabel,

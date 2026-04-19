@@ -40,8 +40,8 @@ import timestamp.feature.editor.generated.resources.*
 
 @Composable
 internal fun PreviewPanel(
-    state: TimestampEditorUiContract.State,
-    actions: (TimestampEditorUiContract.Action) -> Unit,
+    state: EditorUiContract.State,
+    actions: (EditorUiContract.Action) -> Unit,
     palette: EditorPalette,
 ) {
     Card(
@@ -64,27 +64,27 @@ internal fun PreviewPanel(
                 timestamp = state.timestamp,
                 enabled = state.hasSelectedPhoto,
                 onEditDateRequest = {
-                    actions(TimestampEditorUiContract.Action.EditDateRequested(it))
+                    actions(EditorUiContract.Action.EditDateRequested(it))
                 },
                 onEditTimeRequest = {
-                    actions(TimestampEditorUiContract.Action.EditTimeRequested(it))
+                    actions(EditorUiContract.Action.EditTimeRequested(it))
                 },
             )
 
             OverlayControlRow(
                 label = stringResource(Res.string.overlay_tone),
-                options = TimestampOverlayTone.entries,
+                options = OverlayTone.entries,
                 selected = state.overlayTone,
                 optionLabelRes = { it.labelRes },
-                onSelected = { actions(TimestampEditorUiContract.Action.ToneChanged(it)) },
+                onSelected = { actions(EditorUiContract.Action.ToneChanged(it)) },
             )
 
             HorizontalDivider(color = palette.divider)
             PrimaryActionRow(
                 hasSelectedPhoto = state.hasSelectedPhoto,
                 isExportEnabled = state.isExportEnabled,
-                onResetTimestamp = { actions(TimestampEditorUiContract.Action.ResetTimestamp) },
-                onExport = { actions(TimestampEditorUiContract.Action.Export) },
+                onResetTimestamp = { actions(EditorUiContract.Action.ResetTimestamp) },
+                onExport = { actions(EditorUiContract.Action.Export) },
             )
         }
     }
@@ -127,7 +127,7 @@ private fun TimestampFieldRow(
 
 @Composable
 private fun PreviewCanvas(
-    state: TimestampEditorUiContract.State,
+    state: EditorUiContract.State,
     palette: EditorPalette,
 ) {
     Box(
@@ -154,7 +154,7 @@ private fun PreviewCanvas(
             )
         }
 
-        TimestampOverlay(
+        Overlay(
             timestamp = state.timestamp,
             location = state.location,
             tone = state.overlayTone,
@@ -226,14 +226,14 @@ private fun GestureDrivenImage(
 }
 
 @Composable
-private fun BoxScope.TimestampOverlay(
+private fun BoxScope.Overlay(
     timestamp: String,
     location: String,
-    tone: TimestampOverlayTone,
-    alignment: TimestampOverlayAlignment,
-    scale: TimestampOverlayScale,
-    inset: TimestampOverlayInset,
-    safeArea: TimestampOverlaySafeArea,
+    tone: OverlayTone,
+    alignment: OverlayAlignment,
+    scale: OverlayScale,
+    inset: OverlayInset,
+    safeArea: OverlaySafeArea,
     offsetXStep: Int,
     offsetYStep: Int,
 ) {
@@ -242,7 +242,7 @@ private fun BoxScope.TimestampOverlay(
             .align(alignment.containerAlignment)
             .padding(inset.previewPaddingDp.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
-        horizontalAlignment = if (alignment == TimestampOverlayAlignment.BottomEnd) Alignment.End else Alignment.Start,
+        horizontalAlignment = if (alignment == OverlayAlignment.BottomEnd) Alignment.End else Alignment.Start,
     ) {
         Column(
             modifier = Modifier.offset(
@@ -250,7 +250,7 @@ private fun BoxScope.TimestampOverlay(
                 y = ((offsetYStep * -8) - safeArea.extraPreviewBottomDp).dp,
             ),
             verticalArrangement = Arrangement.spacedBy(6.dp),
-            horizontalAlignment = if (alignment == TimestampOverlayAlignment.BottomEnd) Alignment.End else Alignment.Start,
+            horizontalAlignment = if (alignment == OverlayAlignment.BottomEnd) Alignment.End else Alignment.Start,
         ) {
             Text(
                 text = timestamp,
@@ -259,7 +259,7 @@ private fun BoxScope.TimestampOverlay(
                 fontWeight = FontWeight.Black,
                 fontFamily = FontFamily.Monospace,
                 letterSpacing = 1.4.sp,
-                textAlign = if (alignment == TimestampOverlayAlignment.BottomEnd) TextAlign.End else TextAlign.Start,
+                textAlign = if (alignment == OverlayAlignment.BottomEnd) TextAlign.End else TextAlign.Start,
                 style = overlayTextStyle(tone.shadowColor, 8f, 3f),
             )
             Text(

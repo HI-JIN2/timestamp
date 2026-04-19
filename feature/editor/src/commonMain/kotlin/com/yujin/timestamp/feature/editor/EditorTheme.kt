@@ -74,7 +74,7 @@ internal fun rememberEditorPalette(isDarkTheme: Boolean): EditorPalette {
     }
 }
 
-internal fun timestampColorScheme(isDarkTheme: Boolean) = if (isDarkTheme) {
+internal fun editorColorScheme(isDarkTheme: Boolean) = if (isDarkTheme) {
     darkColorScheme(
         primary = Color.White,
         onPrimary = Color.Black,

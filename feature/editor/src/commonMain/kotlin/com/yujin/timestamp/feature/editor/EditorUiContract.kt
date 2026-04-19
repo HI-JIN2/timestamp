@@ -3,7 +3,7 @@ package com.yujin.timestamp.feature.editor
 import androidx.compose.ui.graphics.ImageBitmap
 import com.yujin.timestamp.core.model.TimestampAspectRatio
 
-object TimestampEditorUiContract {
+object EditorUiContract {
     data class State(
         val selectedImageBase64: String? = null,
         val previewImage: ImageBitmap? = null,
@@ -13,11 +13,11 @@ object TimestampEditorUiContract {
         val timestamp: String = "04.01.26  03:42",
         val location: String = "SEOUL, KR",
         val exportMessage: String? = null,
-        val overlayTone: TimestampOverlayTone = TimestampOverlayTone.ClassicAmber,
-        val overlayAlignment: TimestampOverlayAlignment = TimestampOverlayAlignment.BottomEnd,
-        val overlayScale: TimestampOverlayScale = TimestampOverlayScale.Small,
-        val overlayInset: TimestampOverlayInset = TimestampOverlayInset.Tight,
-        val overlaySafeArea: TimestampOverlaySafeArea = TimestampOverlaySafeArea.Off,
+        val overlayTone: OverlayTone = OverlayTone.ClassicAmber,
+        val overlayAlignment: OverlayAlignment = OverlayAlignment.BottomEnd,
+        val overlayScale: OverlayScale = OverlayScale.Small,
+        val overlayInset: OverlayInset = OverlayInset.Tight,
+        val overlaySafeArea: OverlaySafeArea = OverlaySafeArea.Off,
         val overlayOffsetXStep: Int = 1,
         val overlayOffsetYStep: Int = -1,
         val aspectRatioPreset: TimestampAspectRatio = TimestampAspectRatio.ThreeFour,
@@ -45,7 +45,7 @@ object TimestampEditorUiContract {
         data object Export : Action
         data object ExportMessageShown : Action
         data object ResetTimestamp : Action
-        data class ToneChanged(val value: TimestampOverlayTone) : Action
+        data class ToneChanged(val value: OverlayTone) : Action
         data object OpenCropEditor : Action
         data object CloseCropEditor : Action
         data class AspectRatioChanged(val value: TimestampAspectRatio) : Action
